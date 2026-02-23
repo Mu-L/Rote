@@ -159,7 +159,7 @@ const Announcement = () => {
 
   const content = (
     <div
-      className={`animate-show bg-foreground/2 block px-4 py-4 text-sm font-thin duration-300 ${announcement.link ? 'hover:underline' : ''}`}
+      className={`animate-show bg-foreground/2 block px-4 py-4 text-sm font-light duration-300 ${announcement.link ? 'hover:underline' : ''}`}
     >
       <Activity className="mr-2 inline size-3" />
       <div className="inline">{announcement.content}</div>
