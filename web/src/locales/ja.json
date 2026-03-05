@@ -647,6 +647,8 @@
           "nickname": "ニックネーム",
           "role": "ロール",
           "emailVerified": "メール確認済み",
+          "noteCount": "ノート数",
+          "attachmentCount": "添付数",
           "createdAt": "作成日時",
           "actions": "操作",
           "verified": "確認済み",

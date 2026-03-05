@@ -647,6 +647,8 @@
           "nickname": "Nickname",
           "role": "Role",
           "emailVerified": "Email Verified",
+          "noteCount": "Notes",
+          "attachmentCount": "Attachments",
           "createdAt": "Created At",
           "actions": "Actions",
           "verified": "Verified",

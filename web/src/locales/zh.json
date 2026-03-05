@@ -641,6 +641,8 @@
           "nickname": "昵称",
           "role": "角色",
           "emailVerified": "邮箱验证",
+          "noteCount": "笔记数",
+          "attachmentCount": "附件数",
           "createdAt": "创建时间",
           "actions": "操作",
           "verified": "已验证",
