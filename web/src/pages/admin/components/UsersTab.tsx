@@ -225,7 +225,7 @@ export default function UsersTab() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="min-w-[1100px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t('table.avatar')}</TableHead>
@@ -242,8 +242,8 @@ export default function UsersTab() {
                     <TableHead>{t('table.nickname')}</TableHead>
                     <TableHead>{t('table.role')}</TableHead>
                     <TableHead>{t('table.emailVerified')}</TableHead>
-                    <TableHead>{t('table.noteCount')}</TableHead>
-                    <TableHead>{t('table.attachmentCount')}</TableHead>
+                    <TableHead className="whitespace-nowrap">{t('table.noteCount')}</TableHead>
+                    <TableHead className="whitespace-nowrap">{t('table.attachmentCount')}</TableHead>
                     <TableHead
                       className="cursor-pointer select-none"
                       onClick={() => handleSort('createdAt')}
@@ -291,8 +291,10 @@ export default function UsersTab() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell>{user.noteCount ?? 0}</TableCell>
-                      <TableCell>{user.attachmentCount ?? 0}</TableCell>
+                      <TableCell className="whitespace-nowrap">{user.noteCount ?? 0}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {user.attachmentCount ?? 0}
+                      </TableCell>
                       <TableCell>{formatDate(user.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
