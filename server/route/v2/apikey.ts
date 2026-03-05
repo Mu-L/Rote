@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import mainJson from '../../json/main.json';
 import type { User } from '../../drizzle/schema';
 import { authenticateJWT } from '../../middleware/jwtAuth';
 import type { HonoContext, HonoVariables } from '../../types/hono';
@@ -13,15 +14,47 @@ import { bodyTypeCheck, createResponse, isValidUUID } from '../../utils/main';
 
 // API密钥相关路由
 const apiKeysRouter = new Hono<{ Variables: HonoVariables }>();
+const OPENKEY_PERMISSION_SET = new Set(mainJson.openkeyPermissions);
+
+function normalizeAndValidatePermissions(raw: unknown): string[] | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(raw)) {
+    throw new Error('Permissions wrong!');
+  }
+
+  const normalized = raw.map((item) => {
+    if (typeof item !== 'string') {
+      throw new Error('Permissions wrong!');
+    }
+    return item.trim();
+  });
+
+  if (normalized.some((p) => p.length === 0)) {
+    throw new Error('Permissions wrong!');
+  }
+
+  const invalid = normalized.filter((p) => !OPENKEY_PERMISSION_SET.has(p));
+  if (invalid.length > 0) {
+    throw new Error(`Invalid permissions: ${invalid.join(', ')}`);
+  }
+
+  return Array.from(new Set(normalized));
+}
 
 // 生成API密钥
 apiKeysRouter.post('/', authenticateJWT, async (c: HonoContext) => {
   const user = c.get('user') as User;
+  const body = await c.req.json().catch(() => ({}));
+  const permissions = normalizeAndValidatePermissions((body as any).permissions);
+
   if (!user.id) {
     throw new Error('User ID is required');
   }
 
-  const data = await generateOpenKey(user.id);
+  const data = await generateOpenKey(user.id, permissions);
   return c.json(createResponse(data), 201);
 });
 
@@ -67,7 +100,7 @@ apiKeysRouter.put('/:id', authenticateJWT, bodyTypeCheck, async (c: HonoContext)
   const user = c.get('user') as User;
   const id = c.req.param('id');
   const body = await c.req.json();
-  const { permissions } = body;
+  const permissions = normalizeAndValidatePermissions((body as any).permissions);
 
   if (!user.id) {
     throw new Error('User ID is required');

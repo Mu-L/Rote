@@ -3,28 +3,48 @@
  * Used to handle API key-based access
  */
 
+import { randomUUID } from 'crypto';
 import { Hono } from 'hono';
+import { requireStorageConfig } from '../../middleware/configCheck';
+import type { StorageConfig, UiConfig } from '../../types/config';
 import type { HonoContext, HonoVariables } from '../../types/hono';
+import type { UploadResult } from '../../types/main';
+import { getConfig, getGlobalConfig } from '../../utils/config';
 import {
   addReaction,
   createArticle,
   createRote,
+  deleteArticle,
+  deleteAttachment,
   deleteRote,
   deleteRoteAttachmentsByRoteId,
   deleteRoteLinkPreviewsByRoteId,
   editMyProfile,
   editRote,
+  findArticleById,
   findMyRote,
   findRoteById,
   getMyProfile,
+  getNoteByArticleId,
   removeReaction,
   searchMyRotes,
   setNoteArticleId,
+  updateArticle,
+  upsertAttachmentsByOriginalKey,
 } from '../../utils/dbMethods';
+import {
+  MAX_BATCH_SIZE,
+  MAX_FILES,
+  validateContentType,
+  validateFileSize,
+} from '../../utils/fileValidation';
 import { extractUrlsFromContent, parseAndStoreRoteLinkPreviews } from '../../utils/linkPreview';
 import { createResponse, isOpenKeyOk, isValidUUID } from '../../utils/main';
+import { checkObjectExists, presignPutUrl } from '../../utils/r2';
 import {
   ArticleCreateZod,
+  ArticleUpdateZod,
+  AttachmentPresignZod,
   NoteCreateZod,
   NoteUpdateZod,
   ReactionCreateZod,
@@ -85,6 +105,81 @@ router.post('/articles', isOpenKeyOk, requireOpenKeyPerm('SENDARTICLE'), async (
   const article = await createArticle({ content, authorId: openKey.userid });
   return c.json(createResponse(article), 201);
 });
+
+// Get article by ID using API key
+router.get('/articles/:id', isOpenKeyOk, async (c: HonoContext) => {
+  const openKey = c.get('openKey')!;
+  const id = c.req.param('id');
+
+  if (!id || !isValidUUID(id)) {
+    throw new Error('Invalid or missing ID');
+  }
+
+  const article = await findArticleById(id);
+
+  if (!article) {
+    throw new Error('Article not found');
+  }
+
+  const note = await getNoteByArticleId(id);
+
+  if (article.authorId === openKey.userid) {
+    return c.json(createResponse({ ...article, note }), 200);
+  }
+
+  if (!note || note.state !== 'public') {
+    throw new Error('Access denied: no public note references this article');
+  }
+
+  return c.json(createResponse({ ...article, note }), 200);
+});
+
+// Update article using API key
+router.put(
+  '/articles/:id',
+  isOpenKeyOk,
+  requireOpenKeyPerm('EDITARTICLE'),
+  async (c: HonoContext) => {
+    const openKey = c.get('openKey')!;
+    const id = c.req.param('id');
+
+    if (!id || !isValidUUID(id)) {
+      throw new Error('Invalid or missing ID');
+    }
+
+    const body = await c.req.json();
+    ArticleUpdateZod.parse(body);
+
+    const updated = await updateArticle({ id, authorId: openKey.userid, ...body });
+    if (!updated) {
+      throw new Error('Article not found or permission denied');
+    }
+
+    return c.json(createResponse(updated), 200);
+  }
+);
+
+// Delete article using API key
+router.delete(
+  '/articles/:id',
+  isOpenKeyOk,
+  requireOpenKeyPerm('EDITARTICLE'),
+  async (c: HonoContext) => {
+    const openKey = c.get('openKey')!;
+    const id = c.req.param('id');
+
+    if (!id || !isValidUUID(id)) {
+      throw new Error('Invalid or missing ID');
+    }
+
+    const removed = await deleteArticle({ id, authorId: openKey.userid });
+    if (!removed) {
+      throw new Error('Article not found or permission denied');
+    }
+
+    return c.json(createResponse(removed), 200);
+  }
+);
 
 // Create note using API key - GET method (kept for backward compatibility)
 router.get('/notes/create', isOpenKeyOk, requireOpenKeyPerm('SENDROTE'), async (c: HonoContext) => {
@@ -429,19 +524,25 @@ router.put('/notes/:id', isOpenKeyOk, requireOpenKeyPerm('EDITROTE'), async (c: 
 });
 
 // Delete note using API key
-router.delete('/notes/:id', isOpenKeyOk, requireOpenKeyPerm('EDITROTE'), async (c: HonoContext) => {
-  const openKey = c.get('openKey')!;
-  const id = c.req.param('id');
+// Keep EDITROTE for backward compatibility, but DELETEROTE is the dedicated permission.
+router.delete(
+  '/notes/:id',
+  isOpenKeyOk,
+  requireOpenKeyPerm('DELETEROTE', 'EDITROTE'),
+  async (c: HonoContext) => {
+    const openKey = c.get('openKey')!;
+    const id = c.req.param('id');
 
-  if (!id || !isValidUUID(id)) {
-    throw new Error('Invalid or missing ID');
+    if (!id || !isValidUUID(id)) {
+      throw new Error('Invalid or missing ID');
+    }
+
+    const data = await deleteRote({ id, authorid: openKey.userid });
+    await deleteRoteAttachmentsByRoteId(id, openKey.userid);
+
+    return c.json(createResponse(data), 200);
   }
-
-  const data = await deleteRote({ id, authorid: openKey.userid });
-  await deleteRoteAttachmentsByRoteId(id, openKey.userid);
-
-  return c.json(createResponse(data), 200);
-});
+);
 
 // Query current OpenKey permissions
 router.get('/permissions', isOpenKeyOk, async (c: HonoContext) => {
@@ -548,5 +649,254 @@ router.put('/profile', isOpenKeyOk, requireOpenKeyPerm('EDITPROFILE'), async (c:
   const profile = await editMyProfile(openKey.userid, body);
   return c.json(createResponse(profile), 200);
 });
+
+// --- Attachment Management via OpenKey ---
+
+// Delete attachment using API key
+router.delete(
+  '/attachments/:id',
+  isOpenKeyOk,
+  requireOpenKeyPerm('DELETEATTACHMENT'),
+  async (c: HonoContext) => {
+    const openKey = c.get('openKey')!;
+    const id = c.req.param('id');
+
+    if (!id || !isValidUUID(id)) {
+      throw new Error('Invalid attachment ID');
+    }
+
+    const data = await deleteAttachment(id, openKey.userid);
+    return c.json(createResponse(data), 200);
+  }
+);
+
+// Presign upload URLs using API key
+router.post(
+  '/attachments/presign',
+  isOpenKeyOk,
+  requireOpenKeyPerm('UPLOADATTACHMENT'),
+  requireStorageConfig,
+  async (c: HonoContext) => {
+    // Check if file upload is allowed
+    const uiConfig = await getConfig<UiConfig>('ui');
+    if (uiConfig && uiConfig.allowUploadFile === false) {
+      return c.json(createResponse(null, 'File upload is currently disabled'), 403);
+    }
+
+    const openKey = c.get('openKey')!;
+    const body = await c.req.json();
+    const { files } = body as {
+      files: Array<{ filename?: string; contentType?: string; size?: number }>;
+    };
+
+    // Validate input using Zod
+    AttachmentPresignZod.parse(body);
+
+    if (files.length > MAX_FILES) {
+      throw new Error(`Maximum ${MAX_FILES} files allowed`);
+    }
+
+    // Strict validation
+    for (const f of files) {
+      validateContentType(f.contentType);
+      validateFileSize(f.size);
+    }
+
+    const getExt = (filename?: string, contentType?: string) => {
+      if (filename && filename.includes('.')) return `.${filename.split('.').pop()}`;
+      if (!contentType) return '';
+      const map: Record<string, string> = {
+        'image/jpeg': '.jpg',
+        'image/jpg': '.jpg',
+        'image/png': '.png',
+        'image/webp': '.webp',
+        'image/gif': '.gif',
+        'image/heic': '.heic',
+        'image/heif': '.heif',
+        'image/avif': '.avif',
+        'image/svg+xml': '.svg',
+      };
+      return map[contentType] || '';
+    };
+
+    const results = await Promise.all(
+      files.map(async (f) => {
+        const uuid = randomUUID();
+        const ext = getExt(f.filename, f.contentType);
+        const originalKey = `users/${openKey.userid}/uploads/${uuid}${ext}`;
+        const compressedKey = `users/${openKey.userid}/compressed/${uuid}.webp`;
+
+        const [original, compressed] = await Promise.all([
+          presignPutUrl(originalKey, f.contentType || undefined, 15 * 60),
+          presignPutUrl(compressedKey, 'image/webp', 15 * 60),
+        ]);
+
+        return {
+          uuid,
+          original: {
+            key: originalKey,
+            putUrl: original.putUrl,
+            url: original.url,
+            contentType: f.contentType,
+          },
+          compressed: {
+            key: compressedKey,
+            putUrl: compressed.putUrl,
+            url: compressed.url,
+            contentType: 'image/webp',
+          },
+        };
+      })
+    );
+
+    return c.json(createResponse({ items: results }), 200);
+  }
+);
+
+// Finalize upload using API key
+router.post(
+  '/attachments/finalize',
+  isOpenKeyOk,
+  requireOpenKeyPerm('UPLOADATTACHMENT'),
+  requireStorageConfig,
+  async (c: HonoContext) => {
+    const openKey = c.get('openKey')!;
+    const body = await c.req.json();
+    const { attachments, noteId } = body as {
+      attachments: Array<{
+        uuid: string;
+        originalKey: string;
+        compressedKey?: string;
+        size?: number;
+        mimetype?: string;
+        hash?: string;
+        noteId?: string;
+      }>;
+      noteId?: string;
+    };
+
+    if (!attachments || !Array.isArray(attachments) || attachments.length === 0) {
+      throw new Error('No attachments to finalize');
+    }
+
+    if (attachments.length > MAX_BATCH_SIZE) {
+      throw new Error(`Maximum ${MAX_BATCH_SIZE} attachments can be finalized at once`);
+    }
+
+    // Ownership check: keys must stay under the current user's prefix
+    const prefix = `users/${openKey.userid}/`;
+    const invalid = attachments.find(
+      (a) =>
+        !a.originalKey?.startsWith(prefix) ||
+        (a.compressedKey !== undefined && !a.compressedKey.startsWith(prefix))
+    );
+    if (invalid) {
+      throw new Error('Invalid object key');
+    }
+
+    for (const a of attachments) {
+      if (a.mimetype) {
+        validateContentType(a.mimetype);
+      }
+    }
+
+    const validationErrors: string[] = [];
+    const validAttachments: typeof attachments = [];
+
+    for (const a of attachments) {
+      const originalExists = await checkObjectExists(a.originalKey);
+      if (!originalExists) {
+        validationErrors.push(`Original file not found: ${a.originalKey} (uuid: ${a.uuid})`);
+        continue;
+      }
+
+      if (a.compressedKey) {
+        const compressedExists = await checkObjectExists(a.compressedKey);
+        if (!compressedExists) {
+          validationErrors.push(`Compressed file not found: ${a.compressedKey} (uuid: ${a.uuid})`);
+          validAttachments.push({ ...a, compressedKey: undefined });
+          continue;
+        }
+
+        const originalUuidMatch = a.originalKey.match(/\/uploads\/([^/.]+)(\.[^.]+)?$/);
+        const compressedUuidMatch = a.compressedKey.match(/\/compressed\/([^/.]+)\.webp$/);
+
+        if (!originalUuidMatch || !compressedUuidMatch) {
+          validationErrors.push(
+            `Invalid key format for uuid validation: originalKey=${a.originalKey}, compressedKey=${a.compressedKey}`
+          );
+          continue;
+        }
+
+        const originalUuid = originalUuidMatch[1];
+        const compressedUuid = compressedUuidMatch[1];
+
+        if (originalUuid !== compressedUuid) {
+          validationErrors.push(
+            `UUID mismatch: originalKey contains uuid '${originalUuid}', but compressedKey contains uuid '${compressedUuid}'`
+          );
+          validAttachments.push({ ...a, compressedKey: undefined });
+          continue;
+        }
+
+        if (originalUuid !== a.uuid) {
+          validationErrors.push(
+            `UUID mismatch: request uuid '${a.uuid}' does not match originalKey uuid '${originalUuid}'`
+          );
+          continue;
+        }
+      }
+
+      validAttachments.push(a);
+    }
+
+    if (validAttachments.length === 0) {
+      if (validationErrors.length > 0) {
+        const errorMessage =
+          validationErrors.length === 1
+            ? validationErrors[0]
+            : `${validationErrors.length} validation error(s): ${validationErrors.join('; ')}`;
+        throw new Error(errorMessage);
+      }
+      throw new Error('No valid attachments to finalize after validation');
+    }
+
+    if (validationErrors.length > 0) {
+      console.warn(
+        `Some attachments failed validation (${validationErrors.length} error(s)), but ${validAttachments.length} attachment(s) will be finalized:`,
+        validationErrors
+      );
+    }
+
+    const uploads: UploadResult[] = validAttachments.map((a) => {
+      const storageConfig = getGlobalConfig<StorageConfig>('storage');
+      const urlPrefix = storageConfig?.urlPrefix;
+      const oUrl = `${urlPrefix}/${a.originalKey}`;
+      const cUrl = a.compressedKey ? `${urlPrefix}/${a.compressedKey}` : null;
+      const baseDetails: any = {
+        size: a.size || 0,
+        mimetype: a.mimetype || null,
+        mtime: new Date().toISOString(),
+        key: a.originalKey,
+      };
+      if (a.compressedKey) baseDetails.compressKey = a.compressedKey;
+      if (a.hash) baseDetails.hash = a.hash;
+
+      return {
+        url: oUrl,
+        compressUrl: cUrl,
+        details: baseDetails,
+      };
+    });
+
+    const data = await upsertAttachmentsByOriginalKey(
+      openKey.userid,
+      (noteId as string | undefined) || undefined,
+      uploads
+    );
+
+    return c.json(createResponse(data), 201);
+  }
+);
 
 export default router;

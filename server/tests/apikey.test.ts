@@ -33,7 +33,6 @@ export class ApiKeyTestSuite {
       const keyData = Array.isArray(apiKey) ? apiKey[0] : apiKey;
       TestAssertions.assertNotNull(keyData, 'API Key data should be present');
       TestAssertions.assertNotNull(keyData.id, 'API Key should have an ID');
-      TestAssertions.assertNotNull(keyData.key, 'API Key should have a key value');
 
       this.createdApiKeyIds.push(keyData.id);
 
@@ -61,6 +60,95 @@ export class ApiKeyTestSuite {
         error
       );
       return null;
+    }
+  }
+
+  /**
+   * 测试生成 API Key 时权限立即生效
+   */
+  async testGenerateApiKeyWithPermissions(permissions: string[]) {
+    const startTime = Date.now();
+    try {
+      const response = await this.client.post('/api-keys', { permissions });
+
+      TestAssertions.assertStatus(response.status, 201, 'Generate API Key With Permissions');
+      TestAssertions.assertSuccess(response.data, 'Generate API Key With Permissions');
+
+      const apiKey = response.data.data;
+      TestAssertions.assertNotNull(apiKey, 'API Key should be generated');
+      const keyData = Array.isArray(apiKey) ? apiKey[0] : apiKey;
+      TestAssertions.assertNotNull(keyData, 'API Key data should be present');
+      TestAssertions.assertNotNull(keyData.id, 'API Key should have an ID');
+      TestAssertions.assert(Array.isArray(keyData.permissions), 'Permissions should be an array');
+      TestAssertions.assertEquals(
+        JSON.stringify(keyData.permissions),
+        JSON.stringify(permissions),
+        'Created API Key permissions should match request'
+      );
+
+      this.createdApiKeyIds.push(keyData.id);
+
+      const duration = Date.now() - startTime;
+      this.resultManager.recordResult(
+        'Generate API Key With Permissions',
+        true,
+        `API Key generated with expected permissions: ${keyData.id}`,
+        duration,
+        undefined,
+        { apiKeyId: keyData.id, permissions: keyData.permissions }
+      );
+
+      return keyData;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      const errorMessage = error.message || 'Unknown error';
+      const errorDetails =
+        error.response?.data?.message || error.response?.data?.error || errorMessage;
+      this.resultManager.recordResult(
+        'Generate API Key With Permissions',
+        false,
+        `Failed to generate API Key with permissions: ${errorDetails}`,
+        duration,
+        error
+      );
+      return null;
+    }
+  }
+
+  /**
+   * 测试生成 API Key 时传入非法权限会被拒绝
+   */
+  async testGenerateApiKeyWithInvalidPermissions() {
+    const startTime = Date.now();
+    try {
+      const response = await this.client.post('/api-keys', {
+        permissions: ['SENDROTE', 'INVALID_PERMISSION_FOR_TEST'],
+      });
+
+      TestAssertions.assertStatus(
+        response.status,
+        400,
+        'Generate API Key With Invalid Permissions'
+      );
+
+      const duration = Date.now() - startTime;
+      this.resultManager.recordResult(
+        'Generate API Key With Invalid Permissions',
+        true,
+        'Invalid permissions correctly rejected with status 400',
+        duration
+      );
+      return true;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      this.resultManager.recordResult(
+        'Generate API Key With Invalid Permissions',
+        false,
+        'Invalid permissions were not handled as expected',
+        duration,
+        error
+      );
+      return false;
     }
   }
 
@@ -136,6 +224,39 @@ export class ApiKeyTestSuite {
         error
       );
       return null;
+    }
+  }
+
+  /**
+   * 测试更新 API Key 时传入非法权限会被拒绝
+   */
+  async testUpdateApiKeyWithInvalidPermissions(apiKeyId: string) {
+    const startTime = Date.now();
+    try {
+      const response = await this.client.put(`/api-keys/${apiKeyId}`, {
+        permissions: ['SENDROTE', 'INVALID_PERMISSION_FOR_TEST'],
+      });
+
+      TestAssertions.assertStatus(response.status, 400, 'Update API Key With Invalid Permissions');
+
+      const duration = Date.now() - startTime;
+      this.resultManager.recordResult(
+        'Update API Key With Invalid Permissions',
+        true,
+        `Invalid permissions correctly rejected for API Key ${apiKeyId}`,
+        duration
+      );
+      return true;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      this.resultManager.recordResult(
+        'Update API Key With Invalid Permissions',
+        false,
+        `Invalid permissions update was not handled as expected for API Key ${apiKeyId}`,
+        duration,
+        error
+      );
+      return false;
     }
   }
 

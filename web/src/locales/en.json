@@ -736,6 +736,9 @@
         "GETROTE": "Get Rote",
         "EDITROTE": "Edit Rote (Including Delete)",
         "SENDARTICLE": "Create Article",
+        "EDITARTICLE": "Edit Article (Including Delete)",
+        "UPLOADATTACHMENT": "Upload Attachment",
+        "DELETEATTACHMENT": "Delete Attachment",
         "ADDREACTION": "Add Reaction",
         "DELETEREACTION": "Delete Reaction",
         "EDITPROFILE": "Edit Profile"

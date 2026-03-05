@@ -26,8 +26,8 @@
       "allowUploadFile": true
     },
     "admin": {
-      "username": "admin",
-      "email": "admin@test.com",
+      "username": "testadmin",
+      "email": "testadmin@test.com",
       "password": "password",
       "nickname": "Test Administrator"
     }

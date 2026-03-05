@@ -22,9 +22,12 @@ API Keys can have the following permissions:
 - `GETROTE`: Allows retrieving notes
 - `EDITROTE`: Allows editing and deleting notes
 - `SENDARTICLE`: Allows creating articles
+- `EDITARTICLE`: Allows updating or deleting articles
 - `ADDREACTION`: Allows adding reactions to notes
 - `DELETEREACTION`: Allows deleting reactions from notes
 - `EDITPROFILE`: Allows getting and updating user profile
+- `UPLOADATTACHMENT`: Allows requesting presigned URLs and finalizing attachment uploads
+- `DELETEATTACHMENT`: Allows deleting attachments
 
 When generating or updating an API Key, you can specify which permissions it should have.
 
@@ -130,7 +133,109 @@ When generating or updating an API Key, you can specify which permissions it sho
 
 **Required Permission**: `SENDARTICLE`
 
-### 4. Retrieve Notes
+### 4. Retrieve Article By ID
+
+**Endpoint**: `GET /v2/api/openkey/articles/:id`
+
+**Path Parameters**:
+
+- `id`: The UUID of the article
+
+**Query Parameters**:
+
+- `openkey`: YOUR_API_KEY (Required)
+
+**Response**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": "article_id",
+    "content": "Article content",
+    "authorId": "user_id",
+    "createdAt": "...",
+    "updatedAt": "...",
+    "note": {
+      /* Attached Note Object if available */
+    }
+  }
+}
+```
+
+**Required Permission**: None (Valid API Key required)
+
+### 5. Update Article
+
+**Endpoint**: `PUT /v2/api/openkey/articles/:id`
+
+**Headers**:
+
+- `Content-Type: application/json`
+
+**Path Parameters**:
+
+- `id`: The UUID of the article
+
+**Request Body**:
+
+```json
+{
+  "openkey": "YOUR_API_KEY",
+  "content": "Updated article content"
+}
+```
+
+**Response**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": "article_id",
+    "content": "Updated article content",
+    "authorId": "user_id",
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+**Required Permission**: `EDITARTICLE`
+
+### 6. Delete Article
+
+**Endpoint**: `DELETE /v2/api/openkey/articles/:id`
+
+**Path Parameters**:
+
+- `id`: The UUID of the article
+
+**Query Parameters**:
+
+- `openkey`: YOUR_API_KEY (Required)
+
+**Response**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "id": "article_id",
+    "content": "Article content",
+    "authorId": "user_id",
+    "createdAt": "...",
+    "updatedAt": "..."
+  }
+}
+```
+
+**Required Permission**: `EDITARTICLE`
+
+### 7. Retrieve Notes
 
 **Endpoint**: `GET /v2/api/openkey/notes`
 
@@ -184,7 +289,7 @@ When generating or updating an API Key, you can specify which permissions it sho
 
 **Required Permission**: `GETROTE`
 
-### 5. Search Notes
+### 8. Search Notes
 
 **Endpoint**: `GET /v2/api/openkey/notes/search`
 
@@ -201,7 +306,7 @@ When generating or updating an API Key, you can specify which permissions it sho
 
 **Required Permission**: `GETROTE`
 
-### 6. Add Reaction
+### 9. Add Reaction
 
 **Endpoint**: `POST /v2/api/openkey/reactions`
 
@@ -237,7 +342,7 @@ When generating or updating an API Key, you can specify which permissions it sho
 
 **Required Permission**: `ADDREACTION`
 
-### 7. Remove Reaction
+### 10. Remove Reaction
 
 **Endpoint**: `DELETE /v2/api/openkey/reactions/:roteid/:type`
 
@@ -264,7 +369,7 @@ When generating or updating an API Key, you can specify which permissions it sho
 
 **Required Permission**: `DELETEREACTION`
 
-### 8. Get Profile
+### 11. Get Profile
 
 **Endpoint**: `GET /v2/api/openkey/profile`
 
@@ -298,7 +403,7 @@ When generating or updating an API Key, you can specify which permissions it sho
 
 **Required Permission**: `EDITPROFILE`
 
-### 9. Update Profile
+### 12. Update Profile
 
 **Endpoint**: `PUT /v2/api/openkey/profile`
 
@@ -348,7 +453,7 @@ All fields are optional. Username validation:
 
 **Required Permission**: `EDITPROFILE`
 
-### 10. Check Permissions
+### 13. Check Permissions
 
 **Endpoint**: `GET /v2/api/openkey/permissions`
 
@@ -369,6 +474,129 @@ All fields are optional. Username validation:
 ```
 
 **Required Permission**: None (Valid API Key required)
+
+### 14. Presign Attachment Upload
+
+**Endpoint**: `POST /v2/api/openkey/attachments/presign`
+
+**Headers**:
+
+- `Content-Type: application/json`
+
+**Request Body**:
+
+```json
+{
+  "openkey": "YOUR_API_KEY",
+  "files": [
+    {
+      "filename": "image.jpg",
+      "contentType": "image/jpeg",
+      "size": 12345
+    }
+  ]
+}
+```
+
+**Response**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "items": [
+      {
+        "uuid": "attachment_uuid",
+        "original": {
+          "key": "users/user_id/uploads/attachment_uuid.jpg",
+          "putUrl": "https://presigned-url-for-upload",
+          "url": "https://public-url",
+          "contentType": "image/jpeg"
+        },
+        "compressed": {
+          "key": "users/user_id/compressed/attachment_uuid.webp",
+          "putUrl": "https://presigned-url-for-compressed",
+          "url": "https://public-url-compressed",
+          "contentType": "image/webp"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Required Permission**: `UPLOADATTACHMENT`
+
+### 15. Finalize Attachment Upload
+
+**Endpoint**: `POST /v2/api/openkey/attachments/finalize`
+
+**Headers**:
+
+- `Content-Type: application/json`
+
+**Request Body**:
+
+```json
+{
+  "openkey": "YOUR_API_KEY",
+  "attachments": [
+    {
+      "uuid": "attachment_uuid",
+      "originalKey": "users/user_id/uploads/attachment_uuid.jpg",
+      "compressedKey": "users/user_id/compressed/attachment_uuid.webp",
+      "size": 12345,
+      "mimetype": "image/jpeg",
+      "hash": "optional_hash"
+    }
+  ]
+}
+```
+
+**Response**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "id": "attachment_uuid",
+      "originalKey": "users/user_id/uploads/attachment_uuid.jpg",
+      "mimetype": "image/jpeg"
+    }
+  ]
+}
+```
+
+**Required Permission**: `UPLOADATTACHMENT`
+
+### 16. Delete Attachment
+
+**Endpoint**: `DELETE /v2/api/openkey/attachments/:id`
+
+**Path Parameters**:
+
+- `id`: The UUID of the attachment
+
+**Query Parameters**:
+
+- `openkey`: YOUR_API_KEY (Required)
+
+**Response**:
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "count": 1
+  }
+}
+```
+
+**Required Permission**: `DELETEATTACHMENT`
 
 ## Error Handling
 
@@ -391,7 +619,7 @@ Common error codes:
 - 400: Missing required parameters or invalid request
 - 400: Input length exceeds limit (title > 200 chars, content > 1,000,000 chars, tag > 50 chars, or > 20 tags)
 
-### 11. Monitoring API Key Usage
+### 17. Monitoring API Key Usage
 
 You can retrieve usage logs for a specific API Key to monitor its activity.
 

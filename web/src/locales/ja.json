@@ -736,6 +736,9 @@
         "GETROTE": "Rote を取得",
         "EDITROTE": "Rote を編集（削除を含む）",
         "SENDARTICLE": "記事を作成",
+        "EDITARTICLE": "記事を編集（削除を含む）",
+        "UPLOADATTACHMENT": "添付ファイルをアップロード",
+        "DELETEATTACHMENT": "添付ファイルを削除",
         "ADDREACTION": "リアクションを追加",
         "DELETEREACTION": "リアクションを削除",
         "EDITPROFILE": "プロフィールを編集"

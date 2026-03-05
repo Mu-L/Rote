@@ -13,35 +13,18 @@ import {
   updateAttachmentsSortOrder,
   upsertAttachmentsByOriginalKey,
 } from '../../utils/dbMethods';
-import { validateContentType } from '../../utils/fileValidation';
+import {
+  MAX_BATCH_SIZE,
+  MAX_FILES,
+  validateContentType,
+  validateFileSize,
+} from '../../utils/fileValidation';
 import { createResponse, isValidUUID } from '../../utils/main';
 import { checkObjectExists, presignPutUrl } from '../../utils/r2';
 import { AttachmentPresignZod } from '../../utils/zod';
 
 // 附件相关路由
 const attachmentsRouter = new Hono<{ Variables: HonoVariables }>();
-
-// 文件上传限制常量
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-const MAX_FILES = 9;
-const MAX_BATCH_SIZE = 100; // 批量操作最大数量限制
-
-/**
- * 验证文件大小（用于 presign 接口）
- * @param size 文件大小（字节）
- * @throws Error 如果文件大小无效
- */
-function validateFileSize(size: number | undefined | null): void {
-  if (size === undefined || size === null) {
-    throw new Error('File size (size) is required');
-  }
-  if (size <= 0) {
-    throw new Error('File size must be greater than 0');
-  }
-  if (size > MAX_FILE_SIZE) {
-    throw new Error(`File size exceeds limit: ${MAX_FILE_SIZE} bytes`);
-  }
-}
 
 // 删除单个附件
 attachmentsRouter.delete('/:id', authenticateJWT, async (c: HonoContext) => {

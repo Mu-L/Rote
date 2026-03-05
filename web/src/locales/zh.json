@@ -730,6 +730,9 @@
         "GETROTE": "获取Rote",
         "EDITROTE": "编辑Rote（包括删除）",
         "SENDARTICLE": "创建文章",
+        "EDITARTICLE": "编辑文章（包括删除）",
+        "UPLOADATTACHMENT": "上传附件",
+        "DELETEATTACHMENT": "删除附件",
         "ADDREACTION": "添加反应",
         "DELETEREACTION": "删除反应",
         "EDITPROFILE": "编辑用户资料"
