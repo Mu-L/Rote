@@ -116,6 +116,14 @@ export async function listUsers(params: {
         avatar: users.avatar,
         role: users.role,
         emailVerified: users.emailVerified,
+        noteCount:
+          sql<number>`(SELECT COUNT(*)::int FROM rotes WHERE rotes.authorid = users.id)`.as(
+            'noteCount'
+          ),
+        attachmentCount:
+          sql<number>`(SELECT COUNT(*)::int FROM attachments WHERE attachments.userid = users.id)`.as(
+            'attachmentCount'
+          ),
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })

@@ -145,13 +145,16 @@
 
 ### 13) OpenKey（API Key 访问）
 
-| 路径                    | 方法 | 认证    | 描述                         |
-| ----------------------- | ---- | ------- | ---------------------------- |
-| `/openkey/notes/create` | GET  | API Key | 创建笔记（兼容）             |
-| `/openkey/notes`        | POST | API Key | 创建笔记                     |
-| `/openkey/notes`        | GET  | API Key | 获取笔记列表                 |
-| `/openkey/notes/search` | GET  | API Key | 搜索笔记                     |
-| `/openkey/articles`     | POST | API Key | 创建文章（需要 SENDARTICLE） |
+| 路径                    | 方法   | 认证    | 描述                         |
+| ----------------------- | ------ | ------- | ---------------------------- |
+| `/openkey/notes/create` | GET    | API Key | 创建笔记（兼容）             |
+| `/openkey/notes`        | POST   | API Key | 创建笔记                     |
+| `/openkey/notes`        | GET    | API Key | 获取笔记列表                 |
+| `/openkey/notes/search` | GET    | API Key | 搜索笔记                     |
+| `/openkey/notes/:id`    | GET    | API Key | 获取单篇笔记详情             |
+| `/openkey/notes/:id`    | PUT    | API Key | 修改单篇笔记                 |
+| `/openkey/notes/:id`    | DELETE | API Key | 删除单篇笔记                 |
+| `/openkey/articles`     | POST   | API Key | 创建文章（需要 SENDARTICLE） |
 
 鉴权：通过 `openkey` 传入（推荐）
 

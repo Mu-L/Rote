@@ -1,6 +1,7 @@
 import NavBar from '@/components/layout/navBar';
 import LoadingPlaceholder from '@/components/others/LoadingPlaceholder';
 import { Button } from '@/components/ui/button';
+import ContainerWithSideBar from '@/layout/ContainerWithSideBar';
 import { useAuthState } from '@/state/profile';
 import { get } from '@/utils/api';
 import { Database, Globe, Settings, Shield, Users } from 'lucide-react';
@@ -94,7 +95,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="noScrollBar relative flex-1 divide-y overflow-x-hidden overflow-y-visible pb-20">
+    <ContainerWithSideBar>
       <NavBar title={t('title')} icon={<Shield className="size-5" />} />
 
       <div className="flex flex-col divide-y">
@@ -193,6 +194,6 @@ export default function AdminDashboard() {
         {/* 用户管理 */}
         {activeTab === 'users' && <UsersTab />}
       </div>
-    </div>
+    </ContainerWithSideBar>
   );
 }

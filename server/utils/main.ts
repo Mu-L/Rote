@@ -101,7 +101,7 @@ export async function isOpenKeyOk(c: HonoContext, next: () => Promise<void>) {
     await next();
   } catch (e: any) {
     errorMessage = e?.message || String(e);
-    throw new Error(e);
+    throw e;
   } finally {
     // 记录使用日志（无论成功或失败）
     void logOpenKeyUsage(openkey.toString(), {

@@ -76,6 +76,7 @@ For more deployment options and configuration instructions, please check the doc
 - [Raycast Extension](https://github.com/aBER0724/rote-raycast) - Raycast extension for Rote, developed by [@aBER0724](https://github.com/aBER0724)
 - [Rerote](https://github.com/Rabithua/Rerote) - Data conversion tool that transforms data from other platforms (currently Memos) into Rote format
 - [Rotefeeder](https://github.com/Rabithua/Rotefeeder) - Deno-based RSS/Atom feeder that periodically forwards feed items to Rote via OpenKey
+- [Rote Toolkit](https://github.com/Rabithua/rote-toolkit) - A TypeScript-based enhancement toolkit for Rote, featuring a powerful CLI and a Model Context Protocol (MCP) server for AI integration
 
 ## Technology Stack
 
