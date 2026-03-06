@@ -737,6 +737,7 @@
         "SENDROTE": "Rote を作成",
         "GETROTE": "Rote を取得",
         "EDITROTE": "Rote を編集（削除を含む）",
+        "DELETEROTE": "Rote を削除",
         "SENDARTICLE": "記事を作成",
         "EDITARTICLE": "記事を編集（削除を含む）",
         "UPLOADATTACHMENT": "添付ファイルをアップロード",

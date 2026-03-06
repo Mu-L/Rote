@@ -731,6 +731,7 @@
         "SENDROTE": "创建Rote",
         "GETROTE": "获取Rote",
         "EDITROTE": "编辑Rote（包括删除）",
+        "DELETEROTE": "删除Rote",
         "SENDARTICLE": "创建文章",
         "EDITARTICLE": "编辑文章（包括删除）",
         "UPLOADATTACHMENT": "上传附件",

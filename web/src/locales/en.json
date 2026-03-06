@@ -737,6 +737,7 @@
         "SENDROTE": "Create Rote",
         "GETROTE": "Get Rote",
         "EDITROTE": "Edit Rote (Including Delete)",
+        "DELETEROTE": "Delete Rote",
         "SENDARTICLE": "Create Article",
         "EDITARTICLE": "Edit Article (Including Delete)",
         "UPLOADATTACHMENT": "Upload Attachment",
