@@ -243,7 +243,9 @@ export default function UsersTab() {
                     <TableHead>{t('table.role')}</TableHead>
                     <TableHead>{t('table.emailVerified')}</TableHead>
                     <TableHead className="whitespace-nowrap">{t('table.noteCount')}</TableHead>
-                    <TableHead className="whitespace-nowrap">{t('table.attachmentCount')}</TableHead>
+                    <TableHead className="whitespace-nowrap">
+                      {t('table.attachmentCount')}
+                    </TableHead>
                     <TableHead
                       className="cursor-pointer select-none"
                       onClick={() => handleSort('createdAt')}
