@@ -23,6 +23,7 @@ import EditProfileDialog from './components/EditProfileDialog';
 import OpenKeySection from './components/OpenKeySection';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileSidebar from './components/ProfileSidebar';
+import { getUploadErrorMessage } from '@/utils/directUpload';
 import { createCroppedImage, uploadAvatar, uploadCover } from './utils/avatarUpload';
 
 function ProfilePage() {
@@ -120,7 +121,7 @@ function ProfilePage() {
       setAvatarFile(null);
       toast.success(t('uploadSuccess'));
     } catch (_error: any) {
-      toast.error(t('uploadFailed'));
+      toast.error(`${t('uploadFailed')}: ${getUploadErrorMessage(_error)}`);
       setAvatarUploading(false);
     }
   }
@@ -195,7 +196,7 @@ function ProfilePage() {
       setCoverChangeing(false);
     } catch (_error: any) {
       setCoverChangeing(false);
-      toast.error(t('uploadFailed'));
+      toast.error(`${t('uploadFailed')}: ${getUploadErrorMessage(_error)}`);
     }
   }
 

@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useArticleActions } from '@/hooks/useArticleActions';
 import ContainerWithSideBar from '@/layout/ContainerWithSideBar';
 import { createArticle, getArticleFull, updateArticle } from '@/utils/articleApi';
-import { finalize, presign, uploadToSignedUrl } from '@/utils/directUpload';
+import { finalize, getUploadErrorMessage, presign, uploadToSignedUrl } from '@/utils/directUpload';
 import { formatBytes } from '@/utils/main';
 import { parseMarkdownMeta } from '@/utils/markdownParser';
 import { maybeCompressToWebp } from '@/utils/uploadHelpers';
@@ -199,7 +199,7 @@ export default function ArticleEditPage() {
 
         setContent((prev) => prev.replace(placeholder, finalMarkdown));
       } catch (_err) {
-        toast.error(t('uploadFailed', { name: file.name }));
+        toast.error(`${t('uploadFailed', { name: file.name })}: ${getUploadErrorMessage(_err)}`);
         setContent((prev) =>
           prev.replace(placeholder, `![${t('uploadFailedPlaceholder', { name: file.name })}]()`)
         );

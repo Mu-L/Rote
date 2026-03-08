@@ -4,7 +4,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { Article, Attachment, Rote } from '@/types/main';
 import { del, post, put } from '@/utils/api';
-import { finalize as finalizeUpload, presign, uploadToSignedUrl } from '@/utils/directUpload';
+import {
+  finalize as finalizeUpload,
+  getUploadErrorMessage,
+  presign,
+  uploadToSignedUrl,
+} from '@/utils/directUpload';
 // 压缩与并发工具
 import { useSiteStatus } from '@/hooks/useSiteStatus';
 
@@ -267,7 +272,7 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
           ...prev,
           attachments: prev.attachments.filter((a) => !(a instanceof File && files.includes(a))),
         }));
-        toast.error(`${t('uploadFailed')}: ${error?.response?.data?.message ?? ''}`);
+        toast.error(`${t('uploadFailed')}: ${getUploadErrorMessage(error)}`);
       } finally {
         // 清理上传中标记
         setUploadingFiles((prev) => {
