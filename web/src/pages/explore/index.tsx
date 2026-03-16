@@ -143,30 +143,33 @@ const SideBar = () => {
         <div className="grid grid-cols-2 gap-2">
           <Link
             to="/doc/selfhosted"
-            className="bg-foreground/2 hover:bg-foreground/5 flex items-center gap-2 rounded-md p-2 text-xs duration-200"
+            title={t('community.selfHosted')}
+            className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
           >
             <BookOpen className="size-4" />
-            <div className="font-medium">{t('community.selfHosted')}</div>
+            <div className="min-w-0 truncate font-medium">{t('community.selfHosted')}</div>
           </Link>
 
           <a
             href="https://github.com/rabithua/rote/issues"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-foreground/2 hover:bg-foreground/5 flex items-center gap-2 rounded-md p-2 text-xs duration-200"
+            title={t('community.githubIssues')}
+            className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
           >
             <MessageCircleQuestionIcon className="size-4" />
-            <div className="font-medium">{t('community.githubIssues')}</div>
+            <div className="min-w-0 truncate font-medium">{t('community.githubIssues')}</div>
           </a>
 
           <a
             href="https://apps.apple.com/us/app/rote/id6755513897"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-foreground/2 hover:bg-foreground/5 flex items-center gap-2 rounded-md p-2 text-xs duration-200"
+            title={t('community.iosApp')}
+            className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
           >
             <Smartphone className="size-4" />
-            <div className="font-medium">{t('community.iosApp')}</div>
+            <div className="min-w-0 truncate font-medium">{t('community.iosApp')}</div>
           </a>
 
           {!isDemoSite && (
@@ -174,10 +177,11 @@ const SideBar = () => {
               href="https://demo.rote.ink/login"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-foreground/2 hover:bg-foreground/5 flex items-center gap-2 rounded-md p-2 text-xs duration-200"
+              title={t('community.tryDemo')}
+              className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
             >
               <MonitorPlay className="size-4" />
-              <div className="font-medium">{t('community.tryDemo')}</div>
+              <div className="min-w-0 truncate font-medium">{t('community.tryDemo')}</div>
             </a>
           )}
         </div>
