@@ -300,12 +300,12 @@
       "watch": "Watch",
       "githubOpenSource": "Rote 已在 Github 开源，欢迎 Star!",
       "lastPushTime": "上次推送时间：",
-      "community": {
-        "title": "Rote Community",
-        "selfHosted": "自托管指南",
-        "githubIssues": "GitHub Issues",
-        "tryDemo": "在线 Demo",
-        "iosApp": "iOS App Store"
+      "supportAndDocs": {
+        "title": "支持与文档",
+        "selfHosted": "自部署",
+        "githubIssues": "Issues",
+        "tryDemo": "Demo",
+        "iosApp": "iOS App"
       },
       "communityProjects": {
         "title": "社区项目",

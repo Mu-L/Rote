@@ -21,9 +21,9 @@ import {
   MonitorPlay,
   RefreshCw,
   Rss,
+  Smartphone,
   Sparkles,
   Star,
-  Smartphone,
   Terminal,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -33,14 +33,9 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const communityProjects = [
   {
-    key: 'raycast',
-    href: 'https://github.com/aBER0724/rote-raycast',
+    key: 'roteSkill',
+    href: 'https://github.com/Rabithua/rote-skill',
     icon: <Sparkles className="size-4" />,
-  },
-  {
-    key: 'rerote',
-    href: 'https://github.com/Rabithua/Rerote',
-    icon: <Terminal className="size-4" />,
   },
   {
     key: 'rotefeeder',
@@ -53,8 +48,13 @@ const communityProjects = [
     icon: <Terminal className="size-4" />,
   },
   {
-    key: 'roteSkill',
-    href: 'https://github.com/Rabithua/rote-skill',
+    key: 'rerote',
+    href: 'https://github.com/Rabithua/Rerote',
+    icon: <Terminal className="size-4" />,
+  },
+  {
+    key: 'raycast',
+    href: 'https://github.com/aBER0724/rote-raycast',
     icon: <Sparkles className="size-4" />,
   },
 ] as const;
@@ -149,7 +149,7 @@ const SideBar = () => {
       {isRoteGithubDataLoading ? (
         <LoadingPlaceholder className="py-8" size={6} />
       ) : (
-        <Link target="_blank" to={roteGithubData.html_url} className="flex flex-col gap-2 p-4">
+        <Link target="_blank" to={roteGithubData.html_url} className="flex flex-col gap-2 px-4 py-2">
           <div className="text-sm font-thin">{t('githubOpenSource')}</div>
           <div className="grid w-4/5 grid-cols-2 justify-between gap-2">
             {dataRender.map((item) => (
@@ -168,39 +168,39 @@ const SideBar = () => {
         </Link>
       )}
 
-      <div className="flex flex-col gap-2 p-4">
-        <div className="text-sm font-thin">{t('community.title')}</div>
+      <div className="flex flex-col gap-2 px-4 py-2">
+        <div className="text-md">{t('supportAndDocs.title')}</div>
 
         <div className="grid w-4/5 grid-cols-2 gap-2">
           <Link
             to="/doc/selfhosted"
-            title={t('community.selfHosted')}
+            title={t('supportAndDocs.selfHosted')}
             className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
           >
-            <BookOpen className="size-4" />
-            <div className="min-w-0 truncate">{t('community.selfHosted')}</div>
+            <BookOpen className="size-4 shrink-0" />
+            <div className="min-w-0 truncate">{t('supportAndDocs.selfHosted')}</div>
           </Link>
 
           <a
             href="https://github.com/rabithua/rote/issues"
             target="_blank"
             rel="noopener noreferrer"
-            title={t('community.githubIssues')}
+            title={t('supportAndDocs.githubIssues')}
             className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
           >
-            <MessageCircleQuestionIcon className="size-4" />
-            <div className="min-w-0 truncate">{t('community.githubIssues')}</div>
+            <Github className="size-4 shrink-0" />
+            <div className="min-w-0 truncate">{t('supportAndDocs.githubIssues')}</div>
           </a>
 
           <a
             href="https://apps.apple.com/us/app/rote/id6755513897"
             target="_blank"
             rel="noopener noreferrer"
-            title={t('community.iosApp')}
+            title={t('supportAndDocs.iosApp')}
             className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
           >
-            <Smartphone className="size-4" />
-            <div className="min-w-0 truncate">{t('community.iosApp')}</div>
+            <Smartphone className="size-4 shrink-0" />
+            <div className="min-w-0 truncate">{t('supportAndDocs.iosApp')}</div>
           </a>
 
           {!isDemoSite && (
@@ -208,19 +208,19 @@ const SideBar = () => {
               href="https://demo.rote.ink/login"
               target="_blank"
               rel="noopener noreferrer"
-              title={t('community.tryDemo')}
+              title={t('supportAndDocs.tryDemo')}
               className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
             >
-              <MonitorPlay className="size-4" />
-              <div className="min-w-0 truncate">{t('community.tryDemo')}</div>
+              <MonitorPlay className="size-4 shrink-0" />
+              <div className="min-w-0 truncate">{t('supportAndDocs.tryDemo')}</div>
             </a>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 px-4 py-2">
         <div>
-          <div className="text-sm font-thin">{t('communityProjects.title')}</div>
+          <div className="text-md">{t('communityProjects.title')}</div>
           <div className="text-info text-xs font-light">{t('communityProjects.subtitle')}</div>
         </div>
 

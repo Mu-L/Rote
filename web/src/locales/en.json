@@ -306,11 +306,11 @@
       "watch": "Watch",
       "githubOpenSource": "Rote is open source on Github, welcome to Star!",
       "lastPushTime": "Last push time: ",
-      "community": {
-        "title": "Rote Community",
-        "selfHosted": "Self-hosted guide",
-        "githubIssues": "GitHub Issues",
-        "tryDemo": "Try the demo",
+      "supportAndDocs": {
+        "title": "Support And Docs",
+        "selfHosted": "Self-hosted",
+        "githubIssues": "Issues",
+        "tryDemo": "Try demo",
         "iosApp": "iOS app"
       },
       "communityProjects": {

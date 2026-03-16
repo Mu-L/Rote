@@ -306,12 +306,12 @@
       "watch": "ウォッチ",
       "githubOpenSource": "Rote は Github でオープンソースです。スターをお願いします！",
       "lastPushTime": "最終プッシュ時間：",
-      "community": {
-        "title": "Rote Community",
-        "selfHosted": "セルフホスト ガイド",
-        "githubIssues": "GitHub Issues",
-        "tryDemo": "デモを試す",
-        "iosApp": "iOS アプリ"
+      "supportAndDocs": {
+        "title": "サポートとドキュメント",
+        "selfHosted": "セルフホスト",
+        "githubIssues": "Issues",
+        "tryDemo": "Try demo",
+        "iosApp": "iOS app"
       },
       "communityProjects": {
         "title": "コミュニティ プロジェクト",
