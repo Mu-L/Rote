@@ -169,16 +169,16 @@ const SideBar = () => {
       )}
 
       <div className="flex flex-col gap-2 p-4">
-        <div className="text-sm font-semibold">{t('community.title')}</div>
+        <div className="text-sm font-thin">{t('community.title')}</div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid w-4/5 grid-cols-2 gap-2">
           <Link
             to="/doc/selfhosted"
             title={t('community.selfHosted')}
-            className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
+            className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
           >
             <BookOpen className="size-4" />
-            <div className="min-w-0 truncate font-medium">{t('community.selfHosted')}</div>
+            <div className="min-w-0 truncate">{t('community.selfHosted')}</div>
           </Link>
 
           <a
@@ -186,10 +186,10 @@ const SideBar = () => {
             target="_blank"
             rel="noopener noreferrer"
             title={t('community.githubIssues')}
-            className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
+            className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
           >
             <MessageCircleQuestionIcon className="size-4" />
-            <div className="min-w-0 truncate font-medium">{t('community.githubIssues')}</div>
+            <div className="min-w-0 truncate">{t('community.githubIssues')}</div>
           </a>
 
           <a
@@ -197,10 +197,10 @@ const SideBar = () => {
             target="_blank"
             rel="noopener noreferrer"
             title={t('community.iosApp')}
-            className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
+            className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
           >
             <Smartphone className="size-4" />
-            <div className="min-w-0 truncate font-medium">{t('community.iosApp')}</div>
+            <div className="min-w-0 truncate">{t('community.iosApp')}</div>
           </a>
 
           {!isDemoSite && (
@@ -209,10 +209,10 @@ const SideBar = () => {
               target="_blank"
               rel="noopener noreferrer"
               title={t('community.tryDemo')}
-              className="bg-foreground/2 hover:bg-foreground/5 flex min-w-0 items-center gap-2 rounded-md p-2 text-xs duration-200"
+              className="hover:text-info flex min-w-0 items-center gap-2 text-sm duration-200 hover:opacity-60"
             >
               <MonitorPlay className="size-4" />
-              <div className="min-w-0 truncate font-medium">{t('community.tryDemo')}</div>
+              <div className="min-w-0 truncate">{t('community.tryDemo')}</div>
             </a>
           )}
         </div>
@@ -220,24 +220,24 @@ const SideBar = () => {
 
       <div className="flex flex-col gap-2 p-4">
         <div>
-          <div className="text-sm font-semibold">{t('communityProjects.title')}</div>
-          <div className="text-info text-xs">{t('communityProjects.subtitle')}</div>
+          <div className="text-sm font-thin">{t('communityProjects.title')}</div>
+          <div className="text-info text-xs font-light">{t('communityProjects.subtitle')}</div>
         </div>
 
-        <div className="grid gap-2">
+        <div className="grid w-4/5 gap-2">
           {communityProjects.map((project) => (
             <a
               key={project.key}
               href={project.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-foreground/2 hover:bg-foreground/5 group flex min-w-0 items-start gap-3 rounded-md p-3 text-sm duration-200"
+              className="hover:text-info group flex min-w-0 items-start gap-2 text-sm duration-200 hover:opacity-60"
             >
               <div className="mt-[2px] shrink-0">{project.icon}</div>
               <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-2">
                   <div
-                    className="min-w-0 truncate text-xs font-medium"
+                    className="min-w-0 truncate"
                     title={t(`communityProjects.items.${project.key}.title`)}
                   >
                     {t(`communityProjects.items.${project.key}.title`)}
