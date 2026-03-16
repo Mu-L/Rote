@@ -36,7 +36,12 @@ export interface StorageConfigForTest {
 // 测试存储配置的通用函数
 export async function testStorageConnection(
   config: StorageConfigForTest | null | undefined
-): Promise<{ success: boolean; message?: string }> {
+): Promise<{
+  success: boolean;
+  message?: string;
+  probeUrl?: string;
+  urlPrefixProbeUrl?: string;
+}> {
   // 验证必填字段
   if (
     !config ||
@@ -59,6 +64,8 @@ export async function testStorageConnection(
       return {
         success: true,
         message: response.data?.message || 'Storage connection test successful',
+        probeUrl: response.data?.details?.probeUrl,
+        urlPrefixProbeUrl: response.data?.details?.urlPrefixProbeUrl,
       };
     } else {
       return {
@@ -70,6 +77,37 @@ export async function testStorageConnection(
     return {
       success: false,
       message: error?.response?.data?.message || error?.message || 'Unknown error',
+    };
+  }
+}
+
+/**
+ * 从浏览器侧探测 CORS 是否正确配置。
+ * 发送一个 GET 请求到 presigned URL，如果 CORS 未配置则浏览器 preflight 会失败。
+ * 返回 { ok: true } 或 { ok: false, reason: string }。
+ */
+export async function probeCors(
+  url: string
+): Promise<{ ok: boolean; reason?: string }> {
+  try {
+    const resp = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+    });
+    // 任何 HTTP 响应（包括 403/404）说明 CORS 允许了这个请求
+    // 404 是正常的因为 probe key 不存在
+    if (resp.status === 403 || resp.status === 404 || (resp.status >= 200 && resp.status < 500)) {
+      return { ok: true };
+    }
+    return { ok: true };
+  } catch (_err: any) {
+    // fetch 在 CORS 被阻止时会抛 TypeError
+    return {
+      ok: false,
+      reason:
+        'CORS preflight failed. The browser cannot access storage directly. ' +
+        'Please check that your S3/R2 bucket CORS configuration allows the current origin: ' +
+        window.location.origin,
     };
   }
 }

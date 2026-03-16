@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { testStorageConnection } from '@/utils/setupApi';
+import { probeCors, testStorageConnection } from '@/utils/setupApi';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -100,6 +100,31 @@ export default function S3ConfigForm({
 
       if (result.success) {
         toast.success(t('pages.admin.storage.testSuccess'));
+
+        // 浏览器侧 CORS 探测
+        if (result.probeUrl) {
+          const corsResult = await probeCors(result.probeUrl);
+          if (corsResult.ok) {
+            toast.success(t('pages.admin.storage.corsSuccess'));
+          } else {
+            toast.warning(t('pages.admin.storage.corsFailed'), {
+              duration: 8000,
+              description: corsResult.reason,
+            });
+          }
+        }
+
+        // URL Prefix 探测
+        if (result.urlPrefixProbeUrl) {
+          const urlPrefixResult = await probeCors(result.urlPrefixProbeUrl);
+          if (urlPrefixResult.ok) {
+            toast.success(t('pages.admin.storage.urlPrefixSuccess'));
+          } else {
+            toast.warning(t('pages.admin.storage.urlPrefixFailed'), {
+              duration: 8000,
+            });
+          }
+        }
       } else {
         toast.error(
           `${t('pages.admin.storage.testFailed', {

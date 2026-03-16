@@ -2,7 +2,7 @@ import S3ConfigForm from '@/components/common/S3ConfigForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { put } from '@/utils/api';
-import { testStorageConnection } from '@/utils/setupApi';
+import { probeCors, testStorageConnection } from '@/utils/setupApi';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -53,6 +53,31 @@ export default function StorageConfigTab({
       const result = await testStorageConnection(storageConfig);
       if (result.success) {
         toast.success(t('testSuccess'));
+
+        // 浏览器侧 CORS 探测
+        if (result.probeUrl) {
+          const corsResult = await probeCors(result.probeUrl);
+          if (corsResult.ok) {
+            toast.success(t('corsSuccess'));
+          } else {
+            toast.warning(t('corsFailed'), {
+              duration: 8000,
+              description: corsResult.reason,
+            });
+          }
+        }
+
+        // URL Prefix 探测
+        if (result.urlPrefixProbeUrl) {
+          const urlPrefixResult = await probeCors(result.urlPrefixProbeUrl);
+          if (urlPrefixResult.ok) {
+            toast.success(t('urlPrefixSuccess'));
+          } else {
+            toast.warning(t('urlPrefixFailed'), {
+              duration: 8000,
+            });
+          }
+        }
       } else {
         toast.error(`${t('testFailed', { error: result.message })} ${t('seeConsole')}`);
       }

@@ -1,5 +1,6 @@
-import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import { RequestChecksumCalculation } from '@aws-sdk/middleware-flexible-checksums';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import type { ConfigTestResult, StorageConfig } from '../types/config';
 
 /**
@@ -92,6 +93,25 @@ export class ConfigTester {
       // 测试存储桶访问权限
       await s3Client.send(new HeadBucketCommand({ Bucket: bucketName }));
 
+      // 生成 presigned GET URL 用于前端 CORS 探测
+      // 使用一个不存在的虚拟 key，presigned URL 本身足以触发浏览器 CORS preflight
+      const probeKey = '_rote_cors_probe';
+      let probeUrl: string | undefined;
+      try {
+        const getCommand = new GetObjectCommand({
+          Bucket: bucketName,
+          Key: probeKey,
+        });
+        probeUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 120 });
+      } catch (probeError: any) {
+        // presigned URL 生成失败不影响主测试结果，仅记录警告
+        console.warn('[storage-test] Failed to generate CORS probe URL:', probeError.message);
+      }
+
+      // 构建 URL Prefix 探测地址
+      const urlPrefix = (config.urlPrefix || '').trim().replace(/\/+$/, '');
+      const urlPrefixProbeUrl = urlPrefix ? `${urlPrefix}/${probeKey}` : undefined;
+
       return {
         success: true,
         message: 'Storage configuration test successful',
@@ -99,6 +119,8 @@ export class ConfigTester {
           endpoint: config.endpoint,
           bucket: config.bucket,
           urlPrefix: config.urlPrefix,
+          probeUrl,
+          urlPrefixProbeUrl,
         },
       };
     } catch (error: any) {
