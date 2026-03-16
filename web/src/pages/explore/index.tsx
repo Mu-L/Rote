@@ -20,13 +20,44 @@ import {
   MessageCircleQuestionIcon,
   MonitorPlay,
   RefreshCw,
+  Rss,
+  Sparkles,
   Star,
   Smartphone,
+  Terminal,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+const communityProjects = [
+  {
+    key: 'raycast',
+    href: 'https://github.com/aBER0724/rote-raycast',
+    icon: <Sparkles className="size-4" />,
+  },
+  {
+    key: 'rerote',
+    href: 'https://github.com/Rabithua/Rerote',
+    icon: <Terminal className="size-4" />,
+  },
+  {
+    key: 'rotefeeder',
+    href: 'https://github.com/Rabithua/Rotefeeder',
+    icon: <Rss className="size-4" />,
+  },
+  {
+    key: 'roteToolkit',
+    href: 'https://github.com/Rabithua/rote-toolkit',
+    icon: <Terminal className="size-4" />,
+  },
+  {
+    key: 'roteSkill',
+    href: 'https://github.com/Rabithua/rote-skill',
+    icon: <Sparkles className="size-4" />,
+  },
+] as const;
 
 function ExplorePage() {
   const { t } = useTranslation('translation', { keyPrefix: 'pages.explore' });
@@ -184,6 +215,41 @@ const SideBar = () => {
               <div className="min-w-0 truncate font-medium">{t('community.tryDemo')}</div>
             </a>
           )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 p-4">
+        <div>
+          <div className="text-sm font-semibold">{t('communityProjects.title')}</div>
+          <div className="text-info text-xs">{t('communityProjects.subtitle')}</div>
+        </div>
+
+        <div className="grid gap-2">
+          {communityProjects.map((project) => (
+            <a
+              key={project.key}
+              href={project.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-foreground/2 hover:bg-foreground/5 group flex min-w-0 items-start gap-3 rounded-md p-3 text-sm duration-200"
+            >
+              <div className="mt-[2px] shrink-0">{project.icon}</div>
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-center gap-2">
+                  <div
+                    className="min-w-0 truncate text-xs font-medium"
+                    title={t(`communityProjects.items.${project.key}.title`)}
+                  >
+                    {t(`communityProjects.items.${project.key}.title`)}
+                  </div>
+                  <ArrowUpRight className="text-info size-4 shrink-0 opacity-0 duration-200 group-hover:opacity-100" />
+                </div>
+                <div className="text-info line-clamp-1 text-xs font-light">
+                  {t(`communityProjects.items.${project.key}.description`)}
+                </div>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
 

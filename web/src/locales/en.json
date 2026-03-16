@@ -312,6 +312,32 @@
         "githubIssues": "GitHub Issues",
         "tryDemo": "Try the demo",
         "iosApp": "iOS app"
+      },
+      "communityProjects": {
+        "title": "Community Projects",
+        "subtitle": "Tools and integrations built around Rote",
+        "items": {
+          "raycast": {
+            "title": "Raycast Extension",
+            "description": "Raycast extension for Rote (by @aBER0724)"
+          },
+          "rerote": {
+            "title": "Rerote",
+            "description": "Data conversion tool for migrating other platforms into Rote format"
+          },
+          "rotefeeder": {
+            "title": "Rotefeeder",
+            "description": "RSS/Atom feeder that forwards feed items to Rote via OpenKey"
+          },
+          "roteToolkit": {
+            "title": "Rote Toolkit",
+            "description": "TypeScript toolkit: CLI and MCP server for AI integration"
+          },
+          "roteSkill": {
+            "title": "Rote Skill",
+            "description": "Reusable AI-agent skill built on top of rote-toolkit"
+          }
+        }
       }
     },
     "experiment": {

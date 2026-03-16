@@ -306,6 +306,32 @@
         "githubIssues": "GitHub Issues",
         "tryDemo": "在线 Demo",
         "iosApp": "iOS App Store"
+      },
+      "communityProjects": {
+        "title": "社区项目",
+        "subtitle": "围绕 Rote 的工具与集成",
+        "items": {
+          "raycast": {
+            "title": "Raycast 插件",
+            "description": "Rote 的 Raycast Extension（by @aBER0724）"
+          },
+          "rerote": {
+            "title": "Rerote",
+            "description": "数据转换工具，可将其他平台数据转换为 Rote 格式"
+          },
+          "rotefeeder": {
+            "title": "Rotefeeder",
+            "description": "RSS/Atom 订阅转发工具，通过 OpenKey 定期推送到 Rote"
+          },
+          "roteToolkit": {
+            "title": "Rote Toolkit",
+            "description": "TypeScript 工具箱：包含 CLI 与用于 AI 集成的 MCP Server"
+          },
+          "roteSkill": {
+            "title": "Rote Skill",
+            "description": "基于 rote-toolkit 的可复用 AI Agent Skill"
+          }
+        }
       }
     },
     "experiment": {

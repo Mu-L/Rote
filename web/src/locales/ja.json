@@ -312,6 +312,32 @@
         "githubIssues": "GitHub Issues",
         "tryDemo": "デモを試す",
         "iosApp": "iOS アプリ"
+      },
+      "communityProjects": {
+        "title": "コミュニティ プロジェクト",
+        "subtitle": "Rote を拡張するツールと統合",
+        "items": {
+          "raycast": {
+            "title": "Raycast Extension",
+            "description": "Rote 用 Raycast 拡張（by @aBER0724）"
+          },
+          "rerote": {
+            "title": "Rerote",
+            "description": "他プラットフォームのデータを Rote 形式へ変換するツール"
+          },
+          "rotefeeder": {
+            "title": "Rotefeeder",
+            "description": "RSS/Atom を OpenKey 経由で Rote に転送するフィーダー"
+          },
+          "roteToolkit": {
+            "title": "Rote Toolkit",
+            "description": "TypeScript ツールキット（CLI と AI 統合向け MCP サーバー）"
+          },
+          "roteSkill": {
+            "title": "Rote Skill",
+            "description": "rote-toolkit 上で動く再利用可能な AI Agent Skill"
+          }
+        }
       }
     },
     "experiment": {
