@@ -7,90 +7,82 @@ on:
     branches: [main, develop]
 
 jobs:
-  lint-backend:
-    name: Lint Backend
+  lint-and-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
+    
+    strategy:
+      matrix:
+        include:
+          - path: server
+            node-version: '1.x'  # Bun
+          - path: web
+            node-version: '20.x'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        if: matrix.path == 'server'
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
+      - name: Setup Node.js
+        if: matrix.path == 'web'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.path }}/package-lock.json
+
       - name: Install dependencies
-        run: bun install
+        working-directory: ${{ matrix.path }}
+        run: |
+          if [ "${{ matrix.path }}" == "server" ]; then
+            bun install
+          else
+            npm install
+          fi
 
       - name: Run ESLint
-        run: bun run lint
-
-  lint-frontend:
-    name: Lint Frontend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./web
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run ESLint
-        run: bun run lint
-
-  build-backend:
-    name: Build Backend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
+        working-directory: ${{ matrix.path }}
+        run: |
+          if [ "${{ matrix.path }}" == "server" ]; then
+            bun run lint
+          else
+            npm run lint
+          fi
 
       - name: Build
-        run: bun run build
+        if: matrix.path == 'web'
+        working-directory: ${{ matrix.path }}
+        run: npm run build
 
-  build-frontend:
-    name: Build Frontend
+      - name: Type check
+        working-directory: ${{ matrix.path }}
+        run: |
+          if [ "${{ matrix.path }}" == "server" ]; then
+            bun run build
+          else
+            npx tsc --noEmit
+          fi
+
+  server-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./web
-
+    needs: lint-and-build
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Install dependencies
+        working-directory: server
         run: bun install
 
-      - name: Build
-        run: bun run build
+      - name: Run tests
+        working-directory: server
+        run: bun run test
