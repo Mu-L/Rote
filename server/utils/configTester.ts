@@ -11,6 +11,10 @@ export class ConfigTester {
     return endpoint.trim().replace(/\/+$/, '');
   }
 
+  private static buildStorageProbeKey(): string {
+    return 'users/_storage_test/uploads/_rote_cors_probe';
+  }
+
   private static extractCosRegion(endpoint: string): string | null {
     const match = endpoint.match(/cos\.([a-z0-9-]+)\.myqcloud\.com/i);
     return match ? match[1] : null;
@@ -95,8 +99,8 @@ export class ConfigTester {
 
       // 生成 presigned PUT URL 用于前端 CORS 探测
       // 真实直传使用 PUT，因此这里也用 PUT 来验证浏览器 preflight 是否允许 PUT + Content-Type
-      const probeKey = '_rote_cors_probe';
-      let probeUrl: string | undefined;
+      const probeKey = this.buildStorageProbeKey();
+      let probeUrl: string;
       try {
         const putCommand = new PutObjectCommand({
           Bucket: bucketName,
@@ -105,8 +109,15 @@ export class ConfigTester {
         });
         probeUrl = await getSignedUrl(s3Client, putCommand as any, { expiresIn: 120 });
       } catch (probeError: any) {
-        // presigned URL 生成失败不影响主测试结果，仅记录警告
-        console.warn('[storage-test] Failed to generate CORS probe URL:', probeError.message);
+        return {
+          success: false,
+          message: `Storage configuration test failed: unable to generate upload probe URL (${probeError.message})`,
+          details: {
+            endpoint: config.endpoint,
+            bucket: config.bucket,
+            urlPrefix: config.urlPrefix,
+          },
+        };
       }
 
       // 构建 URL Prefix 探测地址
