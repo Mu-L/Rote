@@ -7,90 +7,36 @@ on:
     branches: [main, develop]
 
 jobs:
-  lint-backend:
-    name: Lint Backend
+  lint-and-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
+    
+    strategy:
+      matrix:
+        include:
+          - path: server
+          - path: web
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Install dependencies
+        working-directory: ${{ matrix.path }}
         run: bun install
 
       - name: Run ESLint
+        working-directory: ${{ matrix.path }}
         run: bun run lint
-
-  lint-frontend:
-    name: Lint Frontend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./web
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run ESLint
-        run: bun run lint
-
-  build-backend:
-    name: Build Backend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./server
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
 
       - name: Build
+        if: matrix.path == 'web'
+        working-directory: ${{ matrix.path }}
         run: bun run build
 
-  build-frontend:
-    name: Build Frontend
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./web
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build
+      - name: Type check
+        working-directory: ${{ matrix.path }}
         run: bun run build

@@ -7,7 +7,7 @@ Rote 是一个开源的个人笔记仓库系统，采用前后端分离架构，
 ## Technology Stack
 
 - **运行时环境**: Bun (替代 Node.js，提供更快的性能)
-- **后端技术**: Bun + TypeScript + Express + Drizzle ORM + PostgreSQL
+- **后端技术**: Bun + TypeScript + Hono + Drizzle ORM + PostgreSQL
 - **前端技术**: React + TypeScript + Vite + Tailwind CSS + Radix UI
 - **数据存储**: PostgreSQL (数据库) + AWS S3/R2 (文件存储)
 - **部署方式**: Docker 容器化部署
@@ -29,16 +29,16 @@ Rote 是一个开源的个人笔记仓库系统，采用前后端分离架构，
 - 国际化：前端实现时必须考虑国际化支持，确保多语言兼容性
 - 文档风格：编写文档保持简洁明了，关注核心内容，避免使用 emoji，可以适当使用其他符号增强可读性
 
-### 后端开发规范 (Bun + Express)
+### 后端开发规范 (Bun + Hono)
 
 - 运行时环境：使用 Bun 作为 JavaScript 运行时，享受更快的执行性能
+- 框架选择：使用 Hono 作为 Web 框架，轻量且高性能
 - 数据库操作：使用 Drizzle ORM 作为 ORM，统一操作 PostgreSQL 数据库
 - 路由组织：API 路由分为 v1 和 v2 版本，统一放置在 `route/` 目录
 - 中间件管理：所有中间件文件放置在 `middleware/` 目录
 - 工具函数：通用工具函数放置在 `utils/` 目录
 - 类型定义：TypeScript 类型定义放置在 `types/` 目录
-- 会话管理：使用 express-session 进行用户会话管理
-- 身份验证：使用 passport 进行用户身份验证和授权
+- 身份验证：使用 JWT (jose) 进行无状态认证
 - 安全控制：实现 API 访问限流机制，防止滥用
 - 文件存储：支持文件上传到 AWS S3/R2 云存储服务
 
