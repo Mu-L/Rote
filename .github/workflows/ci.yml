@@ -45,6 +45,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-and-build
     
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: rote
+          POSTGRES_PASSWORD: rote_password_123
+          POSTGRES_DB: rote
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
       - uses: actions/checkout@v4
 
@@ -59,4 +74,6 @@ jobs:
 
       - name: Run tests
         working-directory: server
+        env:
+          POSTGRESQL_URL: postgresql://rote:rote_password_123@localhost:5432/rote
         run: bun run test
