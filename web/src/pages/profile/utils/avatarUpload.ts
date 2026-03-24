@@ -85,7 +85,7 @@ export async function uploadAvatar(
 
   // 上传压缩图（可选，失败不影响原图）
   let compressedKey: string | undefined;
-  if (compressedBlob) {
+  if (compressedBlob && item.compressed) {
     try {
       await uploadToSignedUrl(item.compressed.putUrl, compressedBlob);
       // 只有上传成功才记录 compressedKey
@@ -144,7 +144,7 @@ export async function uploadCover(file: File): Promise<string> {
 
   // 上传压缩图（可选，失败不影响原图）
   let compressedKey: string | undefined;
-  if (compressedBlob) {
+  if (compressedBlob && item.compressed) {
     try {
       await uploadToSignedUrl(item.compressed.putUrl, compressedBlob);
       // 只有上传成功才记录 compressedKey

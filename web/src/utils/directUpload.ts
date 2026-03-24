@@ -1,12 +1,14 @@
-import axios from 'axios';
+import type { Attachment } from '@/types/main';
+import axios, { type AxiosProgressEvent } from 'axios';
 import { post } from './api';
 
 export type PresignFile = { filename?: string; contentType?: string; size?: number };
+export type MediaKind = 'image' | 'video';
 
 export type PresignItem = {
   uuid: string;
   original: { key: string; putUrl: string; url: string; contentType?: string };
-  compressed: { key: string; putUrl: string; url: string; contentType: 'image/webp' };
+  compressed?: { key: string; putUrl: string; url: string; contentType: 'image/webp' };
 };
 
 export interface PresignResponse {
@@ -23,7 +25,13 @@ export async function presign(files: PresignFile[]) {
   return res.data.items as PresignItem[];
 }
 
-export async function uploadToSignedUrl(putUrl: string, blob: Blob) {
+export type UploadProgressCallback = (_progress: number) => void;
+
+export async function uploadToSignedUrl(
+  putUrl: string,
+  blob: Blob,
+  onProgress?: UploadProgressCallback
+) {
   if (!(blob instanceof Blob) || blob.size === 0) {
     throw new Error('Empty upload payload');
   }
@@ -37,6 +45,16 @@ export async function uploadToSignedUrl(putUrl: string, blob: Blob) {
       transformRequest: [(data) => data as Blob],
       transitional: { clarifyTimeoutError: true },
       validateStatus: () => true,
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (!onProgress) return;
+        const total = progressEvent.total ?? blob.size;
+        if (!total) return;
+        const progress = Math.min(
+          100,
+          Math.max(0, Math.round((progressEvent.loaded / total) * 100))
+        );
+        onProgress(progress);
+      },
     });
   } catch (err: any) {
     // axios throws on network-level failures (CORS blocked, DNS, offline, etc.)
@@ -58,6 +76,8 @@ export async function uploadToSignedUrl(putUrl: string, blob: Blob) {
     const bodyText = typeof resp.data === 'string' ? resp.data : JSON.stringify(resp.data || {});
     throw new Error(`Upload failed: HTTP ${resp.status} ${reqId} ${bodyText}`.trim());
   }
+
+  onProgress?.(100);
 }
 
 /**
@@ -116,4 +136,16 @@ export async function finalize(attachments: FinalizeAttachment[], noteId?: strin
   const res = (await post('/attachments/finalize', { attachments, noteId })) as Record<string, any>;
   if (res.code !== 0) throw new Error(res.message || 'finalize failed');
   return (res.data as any[]) || [];
+}
+
+export function getAttachmentMediaKind(attachment: File | Attachment): MediaKind | null {
+  const mimetype = attachment instanceof File ? attachment.type : attachment.details?.mimetype;
+  const mediaKind = attachment instanceof File ? undefined : attachment.details?.mediaKind;
+
+  if (mediaKind === 'image' || mediaKind === 'video') {
+    return mediaKind;
+  }
+  if (mimetype?.startsWith('image/')) return 'image';
+  if (mimetype?.startsWith('video/')) return 'video';
+  return null;
 }

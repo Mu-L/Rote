@@ -1,7 +1,14 @@
 import imageCompression from 'browser-image-compression';
 
+export const IMAGE_ACCEPT = 'image/*';
+export const VIDEO_ACCEPT = 'video/mp4,video/webm,video/quicktime';
+export const DEFAULT_MAX_VIDEO_UPLOAD_SIZE_MB = 300;
+
 export const shouldCompress = (f: File) =>
   f.type.startsWith('image/') && !f.type.startsWith('image/gif');
+
+export const isVideoFile = (file: File) => file.type.startsWith('video/');
+export const isImageFile = (file: File) => file.type.startsWith('image/');
 
 // 检查文件是否为 HEIC 格式（不支持）
 export const isHeicFile = (file: File): boolean => {

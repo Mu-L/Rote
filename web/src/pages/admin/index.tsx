@@ -62,8 +62,10 @@ export default function AdminDashboard() {
         configs.ui || {
           allowRegistration: true,
           allowUploadFile: true,
+          allowUserVideoUpload: false,
           defaultUserRole: 'user',
           apiRateLimit: 100,
+          maxVideoUploadSizeMB: 300,
         }
       );
       setSecurityConfig(

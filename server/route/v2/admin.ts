@@ -234,14 +234,25 @@ adminRouter.post('/setup', async (c: HonoContext) => {
     if (
       setupData.ui.allowRegistration === undefined ||
       setupData.ui.allowUploadFile === undefined ||
+      setupData.ui.allowUserVideoUpload === undefined ||
       !setupData.ui.defaultUserRole ||
-      setupData.ui.apiRateLimit === undefined
+      setupData.ui.apiRateLimit === undefined ||
+      setupData.ui.maxVideoUploadSizeMB === undefined
     ) {
       return c.json(createResponse(null, 'UI configuration is incomplete'), 400);
     }
     // 验证 apiRateLimit 必须 >= 10
     if (typeof setupData.ui.apiRateLimit !== 'number' || setupData.ui.apiRateLimit < 10) {
       return c.json(createResponse(null, 'API rate limit must be a number and at least 10'), 400);
+    }
+    if (
+      typeof setupData.ui.maxVideoUploadSizeMB !== 'number' ||
+      setupData.ui.maxVideoUploadSizeMB < 1
+    ) {
+      return c.json(
+        createResponse(null, 'Video upload size limit must be a number and at least 1 MB'),
+        400
+      );
     }
     // 验证 defaultUserRole 必须是有效角色
     if (!['user', 'moderator'].includes(setupData.ui.defaultUserRole)) {
@@ -445,6 +456,15 @@ adminRouter.put('/settings', authenticateJWT, requireAdmin, async (c: HonoContex
         (typeof config.apiRateLimit !== 'number' || config.apiRateLimit < 10)
       ) {
         return c.json(createResponse(null, 'API rate limit must be a number and at least 10'), 400);
+      }
+      if (
+        config.maxVideoUploadSizeMB !== undefined &&
+        (typeof config.maxVideoUploadSizeMB !== 'number' || config.maxVideoUploadSizeMB < 1)
+      ) {
+        return c.json(
+          createResponse(null, 'Video upload size limit must be a number and at least 1 MB'),
+          400
+        );
       }
       // 验证 defaultUserRole 必须是有效角色
       if (config.defaultUserRole && !['user', 'moderator'].includes(config.defaultUserRole)) {

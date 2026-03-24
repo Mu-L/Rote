@@ -53,6 +53,15 @@ export default function UIConfigTab({
       toast.error(t('saveFailed', { error: 'API rate limit must be a number and at least 10' }));
       return;
     }
+    if (
+      uiConfig.maxVideoUploadSizeMB !== undefined &&
+      (typeof uiConfig.maxVideoUploadSizeMB !== 'number' || uiConfig.maxVideoUploadSizeMB < 1)
+    ) {
+      toast.error(
+        t('saveFailed', { error: 'Video upload size limit must be a number and at least 1 MB' })
+      );
+      return;
+    }
     // 验证 defaultUserRole 必须是有效角色
     if (uiConfig.defaultUserRole && !['user', 'moderator'].includes(uiConfig.defaultUserRole)) {
       toast.error(
@@ -128,6 +137,19 @@ export default function UIConfigTab({
 
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
+            <Label>{t('ui.allowUserVideoUpload')}</Label>
+            <p className="text-muted-foreground text-sm">{t('ui.allowUserVideoUploadDesc')}</p>
+          </div>
+          <Switch
+            checked={uiConfig?.allowUserVideoUpload ?? false}
+            onCheckedChange={(checked) =>
+              setUiConfig({ ...(uiConfig || {}), allowUserVideoUpload: checked })
+            }
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
             <Label>{t('security.requireVerifiedEmailForExplore')}</Label>
             <p className="text-muted-foreground text-sm">
               {t('security.requireVerifiedEmailForExploreDesc')}
@@ -182,6 +204,27 @@ export default function UIConfigTab({
             }}
           />
           <p className="text-muted-foreground text-xs">{t('ui.apiRateLimitDescription')}</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="maxVideoUploadSizeMB">{t('ui.maxVideoUploadSizeMB')}</Label>
+          <Input
+            id="maxVideoUploadSizeMB"
+            type="number"
+            min="1"
+            value={uiConfig?.maxVideoUploadSizeMB || 300}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              if (!isNaN(value) && value >= 1) {
+                setUiConfig({ ...(uiConfig || {}), maxVideoUploadSizeMB: value });
+              } else if (!isNaN(value) && value < 1) {
+                setUiConfig({ ...(uiConfig || {}), maxVideoUploadSizeMB: 1 });
+              } else if (e.target.value === '') {
+                setUiConfig({ ...(uiConfig || {}), maxVideoUploadSizeMB: undefined as any });
+              }
+            }}
+          />
+          <p className="text-muted-foreground text-xs">{t('ui.maxVideoUploadSizeMBDesc')}</p>
         </div>
 
         <Button onClick={handleSave} disabled={isSaving} className="w-full">

@@ -259,6 +259,8 @@ export default function SetupWizard() {
           defaultUserRole: 'user',
           apiRateLimit: 100,
           allowUploadFile: true,
+          allowUserVideoUpload: false,
+          maxVideoUploadSizeMB: 300,
         },
         admin: {
           username: config.admin.username,

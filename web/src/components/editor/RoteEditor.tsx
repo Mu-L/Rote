@@ -12,8 +12,19 @@ import {
 } from '@/utils/directUpload';
 // 压缩与并发工具
 import { useSiteStatus } from '@/hooks/useSiteStatus';
+import { useAuthState } from '@/state/profile';
 
-import { maybeCompressToWebp, qualityForSize, runConcurrency } from '@/utils/uploadHelpers';
+import { getAttachmentMediaKind } from '@/utils/directUpload';
+import {
+  DEFAULT_MAX_VIDEO_UPLOAD_SIZE_MB,
+  IMAGE_ACCEPT,
+  VIDEO_ACCEPT,
+  isImageFile,
+  isVideoFile,
+  maybeCompressToWebp,
+  qualityForSize,
+  runConcurrency,
+} from '@/utils/uploadHelpers';
 import { useAtom, type PrimitiveAtom } from 'jotai';
 import debounce from 'lodash/debounce';
 import { Archive, BookOpen, Globe2, Globe2Icon, PinIcon, Send, X } from 'lucide-react';
@@ -37,14 +48,35 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
 
   const [submiting, setSubmitting] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<Set<File>>(new Set());
+  const [uploadProgress, setUploadProgress] = useState<Map<File, number>>(new Map());
   const [rote, setRote] = useAtom(roteAtom);
   const { data: siteStatus } = useSiteStatus();
+  const { profile } = useAuthState();
   const roteMaxLetter = siteStatus?.frontendConfig?.roteMaxLetter;
   const canUpload =
     !!siteStatus?.storage?.r2Configured && siteStatus?.ui?.allowUploadFile !== false;
+  const canAlwaysUploadVideo = profile?.role === 'admin' || profile?.role === 'super_admin';
+  const canUploadVideo =
+    canUpload && (canAlwaysUploadVideo || siteStatus?.ui?.allowUserVideoUpload === true);
+  const maxVideoUploadSizeMB =
+    siteStatus?.ui?.maxVideoUploadSizeMB || DEFAULT_MAX_VIDEO_UPLOAD_SIZE_MB;
+  const maxVideoUploadSizeBytes = maxVideoUploadSizeMB * 1024 * 1024;
 
   const [localContent, setLocalContent] = useState(rote.content);
   const [articleSelectionOpen, setArticleSelectionOpen] = useState(false);
+
+  const attachmentMediaKinds = useMemo(
+    () => rote.attachments.map((attachment) => getAttachmentMediaKind(attachment)).filter(Boolean),
+    [rote.attachments]
+  );
+  const hasVideoAttachment = attachmentMediaKinds.includes('video');
+  const imageAttachmentCount = attachmentMediaKinds.filter((kind) => kind === 'image').length;
+  const canAddMoreAttachments = !hasVideoAttachment && imageAttachmentCount < 9;
+  const uploadAccept = hasVideoAttachment
+    ? VIDEO_ACCEPT
+    : canUploadVideo
+      ? `${IMAGE_ACCEPT},${VIDEO_ACCEPT}`
+      : IMAGE_ACCEPT;
 
   // 选中的文章 ID（一对一，只能有一个）
 
@@ -74,9 +106,7 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
     setRote(emptyRote);
     setLocalContent('');
     setUploadingFiles(new Set());
-    setRote(emptyRote);
-    setLocalContent('');
-    setUploadingFiles(new Set());
+    setUploadProgress(new Map());
   }, [setRote]);
 
   useEffect(() => {
@@ -137,6 +167,14 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
         attachments: prevRote.attachments.filter((_, index) => index !== indexToRemove),
       }));
 
+      if (item instanceof File) {
+        setUploadProgress((prev) => {
+          const next = new Map(prev);
+          next.delete(item);
+          return next;
+        });
+      }
+
       // 异步静默请求后端删除（仅对已上传的附件）
       if (!(item instanceof File)) {
         void del(`/attachments/${item.id}`).catch(() => {});
@@ -148,10 +186,58 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
   const uploadFiles = useCallback(
     async (files: File[]) => {
       if (!files?.length) return;
+
+      const fileKinds = files.map((file) => {
+        if (isImageFile(file)) return 'image';
+        if (isVideoFile(file)) return 'video';
+        return null;
+      });
+      const hasUnsupportedFile = fileKinds.some((kind) => kind === null);
+      const hasImageSelection = fileKinds.includes('image');
+      const hasVideoSelection = fileKinds.includes('video');
+
+      if (hasUnsupportedFile) {
+        toast.error(t('unsupportedFileType'));
+        return;
+      }
+      if (hasImageSelection && hasVideoSelection) {
+        toast.error(t('mixedMediaNotAllowed'));
+        return;
+      }
+      if (hasVideoSelection && !canUploadVideo) {
+        toast.error(t('videoUploadDisabled'));
+        return;
+      }
+      if (hasVideoSelection && imageAttachmentCount > 0) {
+        toast.error(t('mixedMediaNotAllowed'));
+        return;
+      }
+      if (hasImageSelection && hasVideoAttachment) {
+        toast.error(t('mixedMediaNotAllowed'));
+        return;
+      }
+      if (hasVideoSelection && (files.length > 1 || hasVideoAttachment)) {
+        toast.error(t('singleVideoOnly'));
+        return;
+      }
+      if (hasImageSelection && imageAttachmentCount + files.length > 9) {
+        toast.error(t('imageLimitExceeded', { count: 9 }));
+        return;
+      }
+      if (hasVideoSelection && files.some((file) => file.size > maxVideoUploadSizeBytes)) {
+        toast.error(t('videoTooLarge', { size: maxVideoUploadSizeMB }));
+        return;
+      }
+
       setRote((prev) => ({ ...prev, attachments: [...prev.attachments, ...files] }));
       setUploadingFiles((prev) => {
         const next = new Set(prev);
         files.forEach((f) => next.add(f));
+        return next;
+      });
+      setUploadProgress((prev) => {
+        const next = new Map(prev);
+        files.forEach((f) => next.set(f, 0));
         return next;
       });
 
@@ -191,11 +277,17 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
             });
 
             // 原图上传（必须成功）
-            await uploadToSignedUrl(item.original.putUrl, file);
+            await uploadToSignedUrl(item.original.putUrl, file, (progress) => {
+              setUploadProgress((prev) => {
+                const next = new Map(prev);
+                next.set(file, progress);
+                return next;
+              });
+            });
 
             // 压缩图上传（可选，失败不影响原图）
             let compressedKey: string | undefined;
-            if (compressedBlob) {
+            if (compressedBlob && item.compressed) {
               try {
                 await uploadToSignedUrl(item.compressed.putUrl, compressedBlob);
                 // 只有上传成功才记录 compressedKey
@@ -280,9 +372,23 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
           files.forEach((f) => next.delete(f));
           return next;
         });
+        setUploadProgress((prev) => {
+          const next = new Map(prev);
+          files.forEach((f) => next.delete(f));
+          return next;
+        });
       }
     },
-    [rote.id, setRote, t]
+    [
+      canUploadVideo,
+      hasVideoAttachment,
+      imageAttachmentCount,
+      maxVideoUploadSizeBytes,
+      maxVideoUploadSizeMB,
+      rote.id,
+      setRote,
+      t,
+    ]
   );
 
   const submit = useCallback(() => {
@@ -408,10 +514,7 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
       const files = e.dataTransfer.files;
 
       if (files.length > 0) {
-        const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
-        if (imageFiles.length > 0) {
-          uploadFiles(imageFiles);
-        }
+        uploadFiles(Array.from(files));
       }
     },
     [uploadFiles]
@@ -500,11 +603,14 @@ function RoteEditor({ roteAtom, callback }: { roteAtom: RoteAtomType; callback?:
         <AttachmentList
           attachments={rote.attachments}
           uploadingFiles={uploadingFiles}
+          uploadProgress={uploadProgress}
           onDelete={deleteFile}
           onReorder={handleAttachmentReorder}
           onFileAdd={handleFileAdd}
           roteId={rote.id}
           disabled={submiting}
+          accept={uploadAccept}
+          canAddMore={canAddMoreAttachments}
         />
       )}
 

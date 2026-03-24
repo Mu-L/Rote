@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { attachments, rotes } from '../../drizzle/schema';
 import { UploadResult } from '../../types/main';
+import { validateRoteAttachmentDetails } from '../fileValidation';
 import db from '../drizzle';
 import { r2deletehandler } from '../r2';
 import { createRoteChange } from './change';
@@ -154,6 +155,19 @@ export async function upsertAttachmentsByOriginalKey(
   }
 }
 
+export async function getAttachmentDetailsByRoteId(
+  roteid: string
+): Promise<Array<{ details: any }>> {
+  try {
+    return await db
+      .select({ details: attachments.details })
+      .from(attachments)
+      .where(eq(attachments.roteid, roteid));
+  } catch (error) {
+    throw new DatabaseError(`Failed to get attachment details for rote: ${roteid}`, error);
+  }
+}
+
 // 将预上传且未绑定的附件绑定到笔记
 export async function bindAttachmentsToRote(
   userid: string,
@@ -168,7 +182,7 @@ export async function bindAttachmentsToRote(
     const result = await db.transaction(async (tx) => {
       // 先严格校验：必须都是当前用户、且尚未绑定
       const candidates = await tx
-        .select({ id: attachments.id })
+        .select({ id: attachments.id, details: attachments.details })
         .from(attachments)
         .where(
           and(
@@ -183,6 +197,13 @@ export async function bindAttachmentsToRote(
           'Some attachments cannot be bound (not found, not owned by user, or already bound)'
         );
       }
+
+      const existingAttachments = await tx
+        .select({ details: attachments.details })
+        .from(attachments)
+        .where(eq(attachments.roteid, roteid));
+
+      validateRoteAttachmentDetails([...existingAttachments, ...candidates]);
 
       // 按照 attachmentIds 的顺序逐个更新，设置对应的 sortIndex
       const updateResults = await Promise.all(

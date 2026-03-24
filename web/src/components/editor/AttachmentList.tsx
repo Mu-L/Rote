@@ -1,5 +1,6 @@
 import FileSelector from '@/components/others/uploader';
 import type { Attachment } from '@/types/main';
+import { getAttachmentMediaKind } from '@/utils/directUpload';
 import {
   closestCenter,
   DndContext,
@@ -25,6 +26,7 @@ interface SortableAttachmentItemProps {
   index: number;
   isUploading: boolean;
   onDelete: (_index: number) => void;
+  uploadProgress?: number;
   id: string;
 }
 
@@ -34,6 +36,7 @@ function SortableAttachmentItem({
   index,
   isUploading,
   onDelete,
+  uploadProgress,
   id,
 }: SortableAttachmentItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -46,12 +49,21 @@ function SortableAttachmentItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const mediaKind = getAttachmentMediaKind(attachment);
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={mediaKind === 'video' ? 'w-full' : undefined}
+      {...attributes}
+      {...listeners}
+    >
       <AttachmentItem
         attachment={attachment}
         index={index}
         isUploading={isUploading}
+        uploadProgress={uploadProgress}
         onDelete={onDelete}
       />
     </div>
@@ -66,6 +78,9 @@ interface AttachmentListProps {
   onFileAdd: (_files: File[]) => void;
   roteId?: string;
   disabled?: boolean;
+  accept?: string;
+  canAddMore?: boolean;
+  uploadProgress?: Map<File, number>;
 }
 
 function AttachmentList({
@@ -76,6 +91,9 @@ function AttachmentList({
   onFileAdd,
   roteId,
   disabled,
+  accept,
+  canAddMore = true,
+  uploadProgress,
 }: AttachmentListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -112,6 +130,8 @@ function AttachmentList({
           <SortableContext items={attachmentIds} strategy={rectSortingStrategy}>
             {attachments.map((attachment, index) => {
               const isUploading = attachment instanceof File && uploadingFiles.has(attachment);
+              const progress =
+                attachment instanceof File ? uploadProgress?.get(attachment) : undefined;
               return (
                 <SortableAttachmentItem
                   key={`attachment-${index}`}
@@ -120,17 +140,19 @@ function AttachmentList({
                   index={index}
                   isUploading={isUploading}
                   onDelete={onDelete}
+                  uploadProgress={progress}
                 />
               );
             })}
           </SortableContext>
         </DndContext>
 
-        {attachments.length < 9 && (
+        {canAddMore && (
           <FileSelector
             id={roteId || 'rote-editor-file-selector'}
             disabled={disabled}
             callback={onFileAdd}
+            accept={accept}
           />
         )}
       </div>

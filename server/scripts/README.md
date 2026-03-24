@@ -105,7 +105,9 @@ Test data is defined in `testConfig.json`:
       "allowRegistration": true,
       "defaultUserRole": "user",
       "apiRateLimit": 100,
-      "allowUploadFile": true
+      "allowUploadFile": true,
+      "allowUserVideoUpload": false,
+      "maxVideoUploadSizeMB": 300
     },
     "admin": {
       "username": "testadmin",

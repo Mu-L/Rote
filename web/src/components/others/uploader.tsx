@@ -5,9 +5,15 @@ interface FileSelectorProps {
   callback: (_files: File[]) => void;
   id: string;
   disabled?: boolean;
+  accept?: string;
 }
 
-export default function FileSelector({ callback, id, disabled }: FileSelectorProps) {
+export default function FileSelector({
+  callback,
+  id,
+  disabled,
+  accept = 'image/*',
+}: FileSelectorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   return (
     <div>
@@ -25,13 +31,14 @@ export default function FileSelector({ callback, id, disabled }: FileSelectorPro
         type="file"
         id={`file-${id}`}
         multiple
-        accept="image/*"
+        accept={accept}
         disabled={disabled}
-        onInput={() => {
+        onInput={(e) => {
           if (fileInputRef.current?.files) {
             const files = Array.from(fileInputRef.current.files);
             callback(files);
           }
+          e.currentTarget.value = '';
         }}
         title="Attachments Uploader"
       />
