@@ -840,7 +840,14 @@ router.post(
     }
 
     const owner = await oneUser(openKey.userid);
-    const hasVideo = attachments.some((a) => isVideoContentType(a.mimetype));
+    const hasVideo = attachments.some(
+      (a) =>
+        inferAttachmentMediaKind({
+          mimetype: a.mimetype,
+          compressedKey: a.compressedKey,
+          key: a.originalKey,
+        }) === 'video'
+    );
     if (hasVideo && !canAlwaysUploadVideo(owner?.role) && !canRegularUserUploadVideo(uiConfig)) {
       return c.json(
         createResponse(null, 'Video upload is currently disabled for regular users'),
@@ -852,7 +859,11 @@ router.post(
     const validAttachments: typeof attachments = [];
 
     for (const a of attachments) {
-      const mediaKind = getMediaKindFromContentType(a.mimetype);
+      const mediaKind = inferAttachmentMediaKind({
+        mimetype: a.mimetype,
+        compressedKey: a.compressedKey,
+        key: a.originalKey,
+      });
 
       const originalExists = await checkObjectExists(a.originalKey);
       if (!originalExists) {

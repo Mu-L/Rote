@@ -262,7 +262,14 @@ attachmentsRouter.post(
       }
     }
 
-    const hasVideo = attachments.some((a) => isVideoContentType(a.mimetype));
+    const hasVideo = attachments.some(
+      (a) =>
+        inferAttachmentMediaKind({
+          mimetype: a.mimetype,
+          compressedKey: a.compressedKey,
+          key: a.originalKey,
+        }) === 'video'
+    );
     if (hasVideo && !canAlwaysUploadVideo(user.role) && !canRegularUserUploadVideo(uiConfig)) {
       return c.json(
         createResponse(null, 'Video upload is currently disabled for regular users'),
@@ -275,7 +282,11 @@ attachmentsRouter.post(
     const validAttachments: typeof attachments = [];
 
     for (const a of attachments) {
-      const mediaKind = getMediaKindFromContentType(a.mimetype);
+      const mediaKind = inferAttachmentMediaKind({
+        mimetype: a.mimetype,
+        compressedKey: a.compressedKey,
+        key: a.originalKey,
+      });
 
       // 1. 验证原图文件是否存在
       const originalExists = await checkObjectExists(a.originalKey);

@@ -125,6 +125,15 @@ describe('fileValidation', () => {
     ).not.toThrow();
   });
 
+  it('prefers original key extension over compressed key when inferring media kind', () => {
+    expect(
+      inferAttachmentMediaKind({
+        key: 'users/test/uploads/example.mp4',
+        compressedKey: 'users/test/compressed/example.webp',
+      })
+    ).toBe('video');
+  });
+
   it('ignores duplicate attachment keys when merging retry payloads', () => {
     const merged = mergeUniqueRoteAttachmentDetails(
       [

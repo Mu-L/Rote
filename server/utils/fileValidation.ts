@@ -107,13 +107,13 @@ export function inferAttachmentMediaKind(input?: UploadLike | null): MediaKind |
     return mediaKind;
   }
 
-  if (input.compressedKey || input.compressKey) {
-    return 'image';
-  }
-
   const mediaKindFromKey = getMediaKindFromFilename(input.key);
   if (mediaKindFromKey) {
     return mediaKindFromKey;
+  }
+
+  if (input.compressedKey || input.compressKey) {
+    return 'image';
   }
 
   return null;
