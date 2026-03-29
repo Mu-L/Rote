@@ -41,3 +41,5 @@ doc/storage/garage/meta/
 doc/storage/garage/data/
 doc/storage/garage/garage.toml
 # 保留文档和配置模板：README.md, QUICK_START.md, docker-compose.yml, cors-config.json, bucket-policy.json
+
+.superset/
