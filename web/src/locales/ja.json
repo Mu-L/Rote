@@ -4,7 +4,11 @@
       "poem": "",
       "headingBefore": "",
       "headingAfter": " のようなノートリポジトリ 🤔",
-      "linksItems": ["ログイン", "", "GitHub"],
+      "linksItems": [
+        "ログイン",
+        "",
+        "GitHub"
+      ],
       "dashboard": "ダッシュボード",
       "star": "スター",
       "fork": "フォーク",
@@ -625,7 +629,11 @@
           "moderator": "モデレーター"
         },
         "apiRateLimit": "API レート制限",
-        "apiRateLimitDescription": "ユーザーまたはIPアドレスごとに許可される1秒あたりの最大リクエスト数。APIの悪用を防ぐために使用されます。最小値は10、デフォルトは100リクエスト/秒です。"
+        "apiRateLimitDescription": "ユーザーまたはIPアドレスごとに許可される1秒あたりの最大リクエスト数。APIの悪用を防ぐために使用されます。最小値は10、デフォルトは100リクエスト/秒です。",
+        "allowUserVideoUpload": "一般ユーザーに動画アップロードを許可",
+        "allowUserVideoUploadDesc": "動画アップロードは高度な機能です。管理者は常に利用でき、このスイッチは一般ユーザーの利用可否を制御します。",
+        "maxVideoUploadSizeMB": "動画サイズ上限（MB）",
+        "maxVideoUploadSizeMBDesc": "動画1件あたりの最大アップロードサイズ。最小1MB、既定値は300MBです。"
       },
       "security": {
         "title": "セキュリティ設定",
@@ -810,7 +818,13 @@
       },
       "error": {
         "emptyContent": "コンテンツは空にできません"
-      }
+      },
+      "videoUploadDisabled": "このサイトでは一般ユーザーの動画アップロードが無効です",
+      "mixedMediaNotAllowed": "画像と動画は同時にアップロードできません",
+      "singleVideoOnly": "1つの Rote には動画を 1 本だけアップロードできます",
+      "imageLimitExceeded": "{{count}} 枚まで画像をアップロードできます",
+      "unsupportedFileType": "未対応のファイル形式が含まれています",
+      "videoTooLarge": "動画サイズは {{size}}MB 以下にしてください"
     },
     "roteItem": {
       "details": "詳細",

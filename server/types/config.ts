@@ -67,6 +67,8 @@ export interface UiConfig {
   defaultUserRole: string;
   apiRateLimit: number;
   allowUploadFile: boolean;
+  allowUserVideoUpload: boolean;
+  maxVideoUploadSizeMB: number;
 }
 
 export interface SystemConfig {
@@ -126,6 +128,8 @@ export interface SetupRequest {
     defaultUserRole: string;
     apiRateLimit: number;
     allowUploadFile: boolean;
+    allowUserVideoUpload: boolean;
+    maxVideoUploadSizeMB: number;
   };
   admin: {
     username: string;

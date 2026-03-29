@@ -133,6 +133,8 @@ siteRouter.get('/status', async (c: HonoContext) => {
       ui: {
         allowRegistration: uiConfig?.allowRegistration ?? true,
         allowUploadFile: uiConfig?.allowUploadFile ?? true,
+        allowUserVideoUpload: uiConfig?.allowUserVideoUpload ?? false,
+        maxVideoUploadSizeMB: uiConfig?.maxVideoUploadSizeMB ?? 300,
       },
 
       // OAuth 配置（用于前端判断是否显示 OAuth 登录按钮）

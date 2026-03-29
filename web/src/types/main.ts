@@ -66,25 +66,29 @@ export type Attachment = {
   sortIndex: number;
   storage: string;
   details: {
-    fieldname: string;
-    originalname: string;
-    encoding: string;
-    mimetype: string;
-    size: number;
-    bucket: string;
-    key: string;
-    acl: string;
-    contentType: string;
-    contentDisposition: string | null;
-    contentEncoding: string | null;
-    storageClass: string;
-    serverSideEncryption: string | null;
-    metadata: {
-      fieldName: string;
+    fieldname?: string;
+    originalname?: string;
+    encoding?: string;
+    mimetype?: string | null;
+    mediaKind?: 'image' | 'video';
+    size?: number;
+    bucket?: string;
+    key?: string;
+    compressKey?: string;
+    acl?: string;
+    contentType?: string;
+    contentDisposition?: string | null;
+    contentEncoding?: string | null;
+    storageClass?: string;
+    serverSideEncryption?: string | null;
+    metadata?: {
+      fieldName?: string;
     };
-    location: string;
-    etag: string;
-    versionId: string;
+    location?: string;
+    etag?: string;
+    versionId?: string;
+    mtime?: string;
+    hash?: string;
   };
   createdAt: string;
   updatedAt: string;

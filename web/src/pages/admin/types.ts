@@ -34,5 +34,7 @@ export interface SystemConfig {
     defaultUserRole?: string;
     apiRateLimit?: number;
     allowUploadFile?: boolean;
+    allowUserVideoUpload?: boolean;
+    maxVideoUploadSizeMB?: number;
   };
 }

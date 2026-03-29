@@ -1,49 +1,108 @@
 import type { Attachment } from '@/types/main';
+import { getAttachmentMediaKind } from '@/utils/directUpload';
 import { X } from 'lucide-react';
 import { PhotoView } from 'react-photo-view';
+import { useEffect, useMemo } from 'react';
 
 interface AttachmentItemProps {
   attachment: File | Attachment;
   index: number;
   isUploading: boolean;
+  uploadProgress?: number;
   onDelete: (_index: number) => void;
 }
 
-function AttachmentItem({ attachment, index, isUploading, onDelete }: AttachmentItemProps) {
+function AttachmentItem({
+  attachment,
+  index,
+  isUploading,
+  uploadProgress,
+  onDelete,
+}: AttachmentItemProps) {
+  const mediaKind = getAttachmentMediaKind(attachment);
+  const objectUrl = useMemo(
+    () => (attachment instanceof File ? URL.createObjectURL(attachment) : null),
+    [attachment]
+  );
+
+  useEffect(() => (objectUrl ? () => URL.revokeObjectURL(objectUrl) : undefined), [objectUrl]);
+
   const thumbSrc =
-    attachment instanceof File
-      ? URL.createObjectURL(attachment)
-      : attachment.compressUrl || attachment.url;
-  const previewSrc = attachment instanceof File ? thumbSrc : attachment.url;
+    objectUrl || (!(attachment instanceof File) ? attachment.compressUrl || attachment.url : '');
+  const previewSrc = objectUrl || (!(attachment instanceof File) ? attachment.url : '');
+  const progressValue =
+    typeof uploadProgress === 'number' ? Math.max(0, Math.min(100, uploadProgress)) : 0;
 
   return (
     <div
-      className="bg-background relative h-20 w-20 overflow-hidden rounded-lg"
+      className={`bg-background relative overflow-hidden ${
+        mediaKind === 'video'
+          ? 'aspect-video w-full rounded-2xl border border-white/10 bg-black'
+          : 'h-20 w-20 rounded-lg'
+      }`}
       key={'attachments_' + index}
     >
-      <PhotoView src={previewSrc}>
-        <img
-          className={`h-full w-full object-cover ${isUploading ? 'opacity-80' : ''}`}
-          height={80}
-          width={80}
-          src={thumbSrc}
-          alt="uploaded"
-        />
-      </PhotoView>
+      {mediaKind === 'video' ? (
+        <>
+          <video
+            className={`h-full w-full ${isUploading ? 'object-cover opacity-55' : 'object-contain'}`}
+            src={previewSrc}
+            controls={!isUploading}
+            muted={isUploading}
+            playsInline
+            preload="metadata"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+          />
 
-      {/* 上传中遮罩与小型 spinner */}
-      {isUploading && (
+          {isUploading && (
+            <>
+              <div className="pointer-events-none absolute inset-0 bg-black/20" />
+              <div className="pointer-events-none absolute inset-0 animate-pulse bg-white/10" />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="text-sm font-medium text-white sm:text-base">{progressValue}%</div>
+              </div>
+              <div className="pointer-events-none absolute right-0 bottom-0 left-0 px-3 py-3">
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
+                  <div
+                    className="h-full rounded-full bg-white transition-[width] duration-150"
+                    style={{ width: `${progressValue}%` }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      ) : (
+        <PhotoView src={previewSrc}>
+          <img
+            className={`h-full w-full object-cover ${isUploading ? 'opacity-80' : ''}`}
+            height={80}
+            width={80}
+            src={thumbSrc}
+            alt="uploaded"
+          />
+        </PhotoView>
+      )}
+
+      {isUploading && mediaKind !== 'video' && (
         <div className="absolute inset-0 grid place-items-center bg-black/30">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />
         </div>
       )}
 
-      <div
-        onClick={() => onDelete(index)}
-        className="absolute top-1 right-1 flex cursor-pointer items-center justify-center rounded-md bg-[#00000080] p-2 backdrop-blur-xl duration-300 hover:scale-95"
+      <button
+        type="button"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(index);
+        }}
+        className="absolute top-1.5 right-1.5 z-10 flex cursor-pointer items-center justify-center rounded-md bg-[#00000080] p-2 backdrop-blur-xl duration-300 hover:scale-95"
+        aria-label="Delete attachment"
       >
         <X className="size-3 text-white" />
-      </div>
+      </button>
     </div>
   );
 }
