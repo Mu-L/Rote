@@ -19,7 +19,11 @@ export function VideoAttachmentPreview({
     if (posterSrc) {
       return (
         <div className={cn('relative h-full w-full overflow-hidden bg-black', className)}>
-          <img className={cn('h-full w-full bg-black object-contain', mediaClassName)} src={posterSrc} alt="" />
+          <img
+            className={cn('h-full w-full bg-black object-contain', mediaClassName)}
+            src={posterSrc}
+            alt=""
+          />
         </div>
       );
     }

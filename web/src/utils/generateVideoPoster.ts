@@ -62,8 +62,7 @@ export async function generateVideoPoster(
     }
 
     const duration = Number.isFinite(video.duration) ? video.duration : 0;
-    const targetTime =
-      duration > 0 ? Math.min(captureSeconds, Math.max(duration - 0.01, 0)) : 0;
+    const targetTime = duration > 0 ? Math.min(captureSeconds, Math.max(duration - 0.01, 0)) : 0;
 
     if (targetTime > 0) {
       video.currentTime = targetTime;

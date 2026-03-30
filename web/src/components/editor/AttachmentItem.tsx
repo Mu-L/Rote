@@ -56,7 +56,8 @@ function AttachmentItem({
   const thumbSrc =
     mediaKind === 'video'
       ? localPosterSrc || (!(attachment instanceof File) ? attachment.posterUrl || '' : '')
-      : objectUrl || (!(attachment instanceof File) ? attachment.compressUrl || attachment.url : '');
+      : objectUrl ||
+        (!(attachment instanceof File) ? attachment.compressUrl || attachment.url : '');
   const previewSrc = objectUrl || (!(attachment instanceof File) ? attachment.url : '');
   const progressValue =
     typeof uploadProgress === 'number' ? Math.max(0, Math.min(100, uploadProgress)) : 0;

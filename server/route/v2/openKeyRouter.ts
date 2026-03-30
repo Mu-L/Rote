@@ -99,7 +99,8 @@ const getExt = (filename?: string, contentType?: string) => {
 const extractOriginalUploadUuid = (key?: string) =>
   key?.match(/\/uploads\/([^/.]+)(\.[^.]+)?$/)?.[1] ?? null;
 
-const extractCompressedUuid = (key?: string) => key?.match(/\/compressed\/([^/.]+)\.webp$/)?.[1] ?? null;
+const extractCompressedUuid = (key?: string) =>
+  key?.match(/\/compressed\/([^/.]+)\.webp$/)?.[1] ?? null;
 
 const extractPosterUuid = (key?: string) => key?.match(/\/posters\/([^/.]+)\.[^.]+$/)?.[1] ?? null;
 
@@ -982,7 +983,9 @@ router.post(
       }
 
       if (!mediaKind) {
-        validationErrors.push(`Unsupported attachment media type: ${a.originalKey} (uuid: ${a.uuid})`);
+        validationErrors.push(
+          `Unsupported attachment media type: ${a.originalKey} (uuid: ${a.uuid})`
+        );
         continue;
       }
 
@@ -1038,8 +1041,7 @@ router.post(
       });
       const cUrl =
         mediaKind === 'image' && a.compressedKey ? `${urlPrefix}/${a.compressedKey}` : null;
-      const pUrl =
-        mediaKind === 'video' && a.posterKey ? `${urlPrefix}/${a.posterKey}` : null;
+      const pUrl = mediaKind === 'video' && a.posterKey ? `${urlPrefix}/${a.posterKey}` : null;
       const baseDetails: any = {
         size: a.size || 0,
         mimetype: a.mimetype || null,
