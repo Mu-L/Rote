@@ -395,6 +395,15 @@ Content-Disposition: attachment; filename=demo-2024-01-01-12-00-00.json
 
 ```json
 {
+  "articles": [
+    {
+      "id": "article-uuid",
+      "content": "# 文章标题\n\n文章正文",
+      "authorId": "user-uuid",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
   "notes": [
     {
       "id": "uuid",
@@ -409,6 +418,14 @@ Content-Disposition: attachment; filename=demo-2024-01-01-12-00-00.json
       "editor": "normal",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-01T00:00:00.000Z",
+      "articleId": "article-uuid",
+      "article": {
+        "id": "article-uuid",
+        "content": "# 文章标题\n\n文章正文",
+        "authorId": "user-uuid",
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z"
+      },
       "author": {
         "username": "demo",
         "nickname": "Demo",
@@ -425,7 +442,8 @@ Content-Disposition: attachment; filename=demo-2024-01-01-12-00-00.json
 说明：
 
 - 返回 JSON 文件下载，文件名格式：`{username}-{YYYY-MM-DD-HH-mm-ss}.json`
-- 包含用户的所有笔记数据，以及每条笔记的附件、反应等信息
+- 包含用户的所有文章与笔记数据，以及每条笔记的附件、反应和文章关联信息
+- `articles` 为用户文章全集；`notes[*].article` 为该笔记关联文章的内联副本，便于导入时完整恢复
 
 可能的错误：
 

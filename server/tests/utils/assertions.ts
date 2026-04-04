@@ -40,7 +40,16 @@ export class TestAssertions {
         `Invalid response data in ${context}: expected object, got ${typeof data}`
       );
     }
-    if (data.success === false && !data.error) {
+    const hasStandardCode = typeof data.code === 'number';
+    const hasLegacySuccess = typeof data.success === 'boolean';
+
+    if (!hasStandardCode && !hasLegacySuccess) {
+      throw new AssertionError(
+        `Invalid response format in ${context}: expected code or success field`
+      );
+    }
+
+    if (hasLegacySuccess && data.success === false && !data.error) {
       throw new AssertionError(`Response indicates failure but no error message in ${context}`);
     }
   }
@@ -50,6 +59,16 @@ export class TestAssertions {
    */
   static assertSuccess(data: any, context: string): void {
     this.assertResponse(data, context);
+
+    if (typeof data.code === 'number') {
+      if (data.code !== 0) {
+        throw new AssertionError(
+          `Expected success response in ${context}, but got code ${data.code}: ${data.message}`
+        );
+      }
+      return;
+    }
+
     if (data.success === false) {
       throw new AssertionError(
         `Expected success response in ${context}, but got error: ${data.error || data.message}`

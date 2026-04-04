@@ -97,7 +97,15 @@ export default function ExportData() {
               ></SlidingNumber>
               <div className="text-info text-sm">{t('attachmentCount')}</div>
             </div>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <SlidingNumber
+                className="text-4xl font-semibold"
+                number={data?.articleCount || '0'}
+              ></SlidingNumber>
+              <div className="text-info text-sm">{t('articleCount')}</div>
+            </div>
           </div>
+          <div className="text-info px-4 text-center text-xs">{t('includesArticlesHint')}</div>
           <button
             onClick={handleDownload}
             disabled={isDownloading}

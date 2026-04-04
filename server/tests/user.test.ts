@@ -224,12 +224,22 @@ export class UserTestSuite {
       const response = await this.client.get('/users/me/export');
 
       TestAssertions.assertStatus(response.status, 200, 'Export Data');
-      // 导出接口返回的是文本，不是 JSON，所以不检查 JSON 结构
       TestAssertions.assertNotNull(response.data, 'Export data should be returned');
+      const exported =
+        typeof response.data.data === 'string'
+          ? JSON.parse(response.data.data)
+          : response.data.data;
+
+      TestAssertions.assertNotNull(exported, 'Export payload should be parsed');
+      TestAssertions.assert(Array.isArray(exported.notes), 'Exported notes should be an array');
+      TestAssertions.assert(
+        Array.isArray(exported.articles),
+        'Exported articles should be an array for round-trip support'
+      );
 
       const duration = Date.now() - startTime;
       this.resultManager.recordResult('Export Data', true, 'Data exported successfully', duration);
-      return response.data;
+      return exported;
     } catch (error: any) {
       const duration = Date.now() - startTime;
       this.resultManager.recordResult(
@@ -255,7 +265,43 @@ export class UserTestSuite {
 
       const result = response.data.data;
       TestAssertions.assertNotNull(result, 'Import result should be returned');
-      TestAssertions.assertEquals(result.success, true, 'Import should be successful');
+      TestAssertions.assertEquals(
+        result.count,
+        Array.isArray(data.notes) ? data.notes.length : 0,
+        'Imported note count should match payload'
+      );
+      TestAssertions.assert(
+        typeof result.created === 'number',
+        'Import result should include created count'
+      );
+      TestAssertions.assert(
+        typeof result.updated === 'number',
+        'Import result should include updated count'
+      );
+      TestAssertions.assertEquals(
+        result.created + result.updated,
+        result.count,
+        'Created and updated counts should add up to imported note count'
+      );
+      TestAssertions.assertNotNull(result.notes, 'Import result should include note summary');
+      TestAssertions.assertNotNull(result.articles, 'Import result should include article summary');
+      TestAssertions.assertNotNull(
+        result.attachments,
+        'Import result should include attachment summary'
+      );
+      TestAssertions.assertEquals(
+        result.notes.total,
+        result.count,
+        'Note summary total should match imported note count'
+      );
+      TestAssertions.assert(
+        typeof result.articles.total === 'number',
+        'Article summary should include total count'
+      );
+      TestAssertions.assert(
+        typeof result.attachments.total === 'number',
+        'Attachment summary should include total count'
+      );
 
       const duration = Date.now() - startTime;
       this.resultManager.recordResult(

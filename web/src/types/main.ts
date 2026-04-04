@@ -226,6 +226,7 @@ export type ApiGetRotesParams = {
 export type Statistics = {
   noteCount: number;
   attachmentsCount: number;
+  articleCount: number;
 };
 
 export interface Subscription {

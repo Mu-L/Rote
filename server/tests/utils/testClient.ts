@@ -4,12 +4,18 @@
 
 export interface ApiResponse<T = any> {
   status: number;
-  data: {
-    success: boolean;
-    data?: T;
-    message?: string;
-    error?: string;
-  };
+  data:
+    | {
+        code: number;
+        data?: T;
+        message?: string;
+      }
+    | {
+        success: boolean;
+        data?: T;
+        message?: string;
+        error?: string;
+      };
 }
 
 export class TestClient {
