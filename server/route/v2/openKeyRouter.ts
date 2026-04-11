@@ -820,11 +820,16 @@ router.get('/heatmap', isOpenKeyOk, requireOpenKeyPerm('GETSTATISTICS'), async (
 });
 
 // Get statistics using API key
-router.get('/statistics', isOpenKeyOk, requireOpenKeyPerm('GETSTATISTICS'), async (c: HonoContext) => {
-  const openKey = c.get('openKey')!;
-  const stats = await statistics(openKey.userid);
-  return c.json(createResponse(stats), 200);
-});
+router.get(
+  '/statistics',
+  isOpenKeyOk,
+  requireOpenKeyPerm('GETSTATISTICS'),
+  async (c: HonoContext) => {
+    const openKey = c.get('openKey')!;
+    const stats = await statistics(openKey.userid);
+    return c.json(createResponse(stats), 200);
+  }
+);
 
 // Get user settings using API key
 router.get('/settings', isOpenKeyOk, requireOpenKeyPerm('GETSETTINGS'), async (c: HonoContext) => {
