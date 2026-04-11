@@ -5,15 +5,15 @@ import { DatabaseError } from './common';
 
 export async function statistics(authorid: string): Promise<any> {
   try {
-    const [noteCountResult, attachmentsList, articleCountResult] = await Promise.all([
+    const [roteCountResult, attachmentsList, articleCountResult] = await Promise.all([
       db.select({ count: count() }).from(rotes).where(eq(rotes.authorid, authorid)),
       db.select().from(attachments).where(eq(attachments.userid, authorid)),
       db.select({ count: count() }).from(articles).where(eq(articles.authorId, authorid)),
     ]);
 
     return {
-      noteCount: noteCountResult[0]?.count || 0,
-      attachmentsCount: attachmentsList.length,
+      roteCount: roteCountResult[0]?.count || 0,
+      attachmentCount: attachmentsList.length,
       articleCount: articleCountResult[0]?.count || 0,
     };
   } catch (error) {
