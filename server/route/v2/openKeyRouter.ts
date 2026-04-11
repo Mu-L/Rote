@@ -824,10 +824,31 @@ router.get('/heatmap', isOpenKeyOk, requireOpenKeyPerm('GETSTATISTICS'), async (
     throw new Error('startDate and endDate are required');
   }
 
-  // Validate date format (YYYY-MM-DD)
+  // Validate date format (YYYY-MM-DD) and that it's a real calendar date
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
     throw new Error('Invalid date format. Use YYYY-MM-DD');
+  }
+
+  // Validate that dates are real calendar dates
+  const startDateObj = new Date(startDate + 'T00:00:00Z');
+  const endDateObj = new Date(endDate + 'T00:00:00Z');
+
+  if (isNaN(startDateObj.getTime())) {
+    throw new Error('Invalid startDate: not a valid calendar date');
+  }
+  if (isNaN(endDateObj.getTime())) {
+    throw new Error('Invalid endDate: not a valid calendar date');
+  }
+
+  // Additional check: verify the parsed date matches the input (catches dates like 2026-02-30)
+  const startDateStr = startDateObj.toISOString().slice(0, 10);
+  const endDateStr = endDateObj.toISOString().slice(0, 10);
+  if (startDateStr !== startDate) {
+    throw new Error('Invalid startDate: not a valid calendar date');
+  }
+  if (endDateStr !== endDate) {
+    throw new Error('Invalid endDate: not a valid calendar date');
   }
 
   const heatmap = await getHeatMap(openKey.userid, startDate, endDate);
